@@ -4,7 +4,7 @@ import re
 
 class Macro_ReplaceValues_Selection:
     def __init__(self):
-        self.word_app = win32com.client.gencache.EnsureDispatch('Word.Application')
+        self.word_app = win32com.client.Dispatch('Word.Application')
         self.excel_file = None
 
     def load_excel_file(self, excel_file_path):

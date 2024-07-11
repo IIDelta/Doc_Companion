@@ -2,7 +2,7 @@ import win32com.client
 
 class Macro_RemoveMultipleSpaces:
     def __init__(self):
-        self.word_app = win32com.client.gencache.EnsureDispatch('Word.Application')
+        self.word_app = win32com.client.Dispatch('Word.Application')
 
     def remove_multiple_spaces(self):
         if not self.word_app.Documents.Count:

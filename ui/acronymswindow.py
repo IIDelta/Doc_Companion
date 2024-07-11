@@ -147,7 +147,7 @@ class AcronymsWindow(QMainWindow):
 
     def run_macro(self):
         try:
-            word_app = win32com.client.gencache.EnsureDispatch('Word.Application')
+            word_app = win32com.client.Dispatch('Word.Application')
 
             if not word_app.Documents.Count:
                 raise Exception("No active word document.")
