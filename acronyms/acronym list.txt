@@ -1,0 +1,131 @@
+AE	Adverse Event
+ALP	Alkaline Phosphatase
+ALT	Alanine Aminotransferase
+ANCOVA	Analysis of Covariance
+AST	Aspartate Aminotransferase
+AUC	Area Under the Concentration-Time Curve
+AUC0-24	Area under the plasma concentration-time curve over 24 h following single dose administration
+AUC0-72	Area under the plasma concentration-time curve over 72 h following single dose administration
+AUC0-72-ss	Area under the plasma concentration-time curve over 72 h following 15-day steady state dosing (multiple dosing)
+AUC0-tau-ss	Area under the plasma concentration-time curve over 24 h following 15-day steady state dosing (multiple dosing)
+AUC0-Tlast	Area under the time-concentration curve from the time of dosing to the time of last observable concentration
+AUCinf	Area under the plasma concentration time curve from time zero to infinity
+BLQ	Below the Limit of Quantification
+BMI	Body Mass Index
+BP	Blood Pressure
+BUN	Blood Urea Nitrogen
+Cav-ss	Average Concentration During a Dosing Interval At Steady State
+CBC	Complete Blood Count
+CDC	Centers for Disease Control and Prevention
+CFR	Code of Federal Regulation
+CFR	Code of Federal Regulations
+CI	Confidence Interval
+CIOMS	Council for International Organizations of Medical Sciences
+CIOMS	Council for International Organizations of Medical Sciences
+Cl	Chlorine
+cm	Centimeter
+Cmax	Maximum plasma concentration
+Cmax-ss	Maximum plasma concentration in a dosing interval at Steady State
+Cmin-ss	Lowest Plasma Concentration in a dosing interval at Steady State
+CONSORT	Consolidated Standards of Reporting Trials
+COWS	Objective Opiate Withdrawal Scale
+CRA	Clinical Research Associate
+CRF	Case Report Form
+CRF	Case Report Form
+CRO	Contract Research Organization
+CRO	Contract Research Organization
+CSR	Clinical Study Report
+Ctrough	Concentration observed at the last planned timepoint prior to dosing
+CV	Coefficient of Variation
+DBP	Diastolic Blood Pressure
+DEQ	Drug Effect Questionnaire
+DMC	Data Monitoring Committee
+ECG	Electrocardiogram
+eCRF	Electronic Case Report Form
+EDC	Electronic Data Capture
+eGFR	Estimated Glomerular Filtration Rate
+EOS	End of Study
+ET	Early Termination
+FAS	Full Analysis Set
+FAS	Full Analysis Set Population
+FDA	Food and Drug Administration
+fl oz	Fluid ounce
+g	Grams
+GCP	Good Clinical Practice
+GCP	Good Clinical Practice
+GI	Gastrointestinal
+GLP	Good Laboratory Practices
+GMP	Good Manufacturing Practices
+h	Hour
+HIPAA	Health Insurance Portability and Accountability Act
+HR	Heart rate
+IB	Investigator's Brochure
+ICF	Inform Consent Form
+ICH	International Conference on Harmonisation
+IP	Investigational Product
+IPMP	Investigational Product Management Plan
+IRB	Institutional Review Board
+ISF	Investigator Site File
+K	Potassium
+Kel	Elimination Rate Constant
+Kg	Kilogram
+LAR	Legally Authorized Representative
+lbs	Pounds
+LEC	Local Ethics Committee
+LS means	Least Squares Means
+MCH	Mean Corpuscular Hemoglobin
+MCHC	Mean Corpuscular Hemoglobin Concentration
+MCV	Mean Corpuscular Volume
+MedDRA	Medical Dictionary for Regulatory Activities
+MedDRA	Medical Dictionary for Regulatory Activities
+mg	Milligram
+mL	Milliliters
+MPV	Mean Platelet Volume
+N/A	Not Applicable
+Na	Sodium
+Ng	Nanogram(s)
+NNHPD	Natural and Non-Prescription Products Directorate
+P1	Placebo #1
+P2	Placebo #2
+P3	Placebo #3
+PD	Protocol Deviation
+PI	Principal Investigator
+PK	Pharmacokinetic
+PKMD	Pharmacokinetic Multiple-Dose
+PKSD	Pharmacokinetic Single-Dose
+PP	Per Protocol Population
+PPS	Per Protocol Set
+PT	Preferred Term
+QA	Quality Assurance
+RBC	Red Blood Cell Count
+RDW	Red Cell Distribution Width
+REB	Research Ethics Board
+RR	Respiratory Rate
+SAE	Serious Adverse Event
+SAF	Safety Population
+SAP	Statistical Analysis Plan
+SBP	Systolic Blood Pressure
+SD	Standard Deviation
+SEM	Standard Error of the Mean
+SMO	Site Management Organization
+SoA	Schedule of Activities
+SOC	System Organ Class
+SOC	System Organ Class
+SOWS	Subjective Opiate Withdrawal Scale
+SpO2	Oxygen Saturation
+T1/2	Terminal Half-Life
+TEAE	Treatment Emergent Adverse Event
+Tlast	Time of last measurable (positive) observed concentration
+Tlast-ss	Time of last measurable (positive) observed concentration at steady state
+Tmax	Time to reach Cmax
+Tmax-ss	Time to reach maximum (peak) plasma concentration following study product administration at steady state
+TMF	Trial Master File
+TP	Test Product
+Tsp	Teaspoon
+V	Visit
+WBC	White Blood Cell Count
+WHO	World Health Organization
+PM	Project Manager
+COVID-19	 Coronavirus Disease of 2019
+ITT	Intention-To-Treat
+RP	Reference Product
