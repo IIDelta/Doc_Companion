@@ -5,7 +5,7 @@ a = Analysis(
     pathex=[],
     binaries=[],
     # Add the file to the datas list:
-    datas=[('acronyms')],
+    datas=[],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
