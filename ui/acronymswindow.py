@@ -204,13 +204,13 @@ class AcronymsWindow(QMainWindow):
                 table.setRowCount(0)  # Clear the table
                 for acronym, context in acronyms[category].items():
                     table.insertRow(table.rowCount())
-                    table.setItem(table.rowCount()-1, 0, QTableWidgetItem(acronym))
+                    table.setItem(
+                        table.rowCount()-1, 0, QTableWidgetItem(acronym))
                     table.setItem(table.rowCount()-1, 1, QTableWidgetItem(get_definition(acronym, definition_path)))
                     checkbox = QCheckBox()
                     checkbox.setChecked(category != "unlikely")
                     table.setCellWidget(table.rowCount()-1, 2, checkbox)
-                    table.setItem(
-                        table.rowCount()-1, 3, QTableWidgetItem(context))
+                    table.setItem(table.rowCount()-1, 3, QTableWidgetItem(context))
         except Exception as e:
             print(str(e))
             self.parent().label.setText(f"Error: {str(e)}")
