@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 import os
 import sys
 import win32com.client
+from ui.acronymswindow import fetch_acronym_list_online
 
 
 # Define MainWindow class, which is a QMainWindow subclass
@@ -142,3 +143,17 @@ class MainWindow(QMainWindow):
                 self.acronyms_window.setWindowFlags(
                     flags & ~Qt.WindowStaysOnTopHint)
             self.acronyms_window.show()
+
+    def prefetch_acronyms(self):
+        # e.g. download & cache the GitHub list (no UI blocking)
+        try:
+            url = (
+                "https://raw.githubusercontent.com/IIDelta/Doc_Companion/"
+                "main/acronyms/acronym%20list.txt"
+            )
+            cache = os.path.join(
+                os.path.expanduser("~"), ".doc_companion", "acronym_list.txt"
+            )
+            fetch_acronym_list_online(url, cache)
+        except Exception as e:
+            print("Prefetch failed:", e)

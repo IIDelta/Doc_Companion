@@ -1,5 +1,6 @@
 # Import necessary modules from PyQt5
 from PyQt5.QtWidgets import (QApplication)
+from PyQt5.QtCore import QTimer
 import sys
 from ui.mainwindow import MainWindow
 
@@ -13,6 +14,8 @@ def main():
     main_window = MainWindow()
     main_window.show()
 
+    # Defer loading the acronym list (or any other expensive startup work)
+    QTimer.singleShot(0, main_window.prefetch_acronyms)
     # Start the application's event loop
     sys.exit(app.exec_())
 
