@@ -6,11 +6,34 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QWidget,
                              QTabWidget)
 import os
 import sys
+import requests
 import win32com.client
 from PyQt5.QtGui import QIcon
 from docx import Document
 from PyQt5.QtCore import Qt, QTimer
 from macros.Acronyms import find_acronyms, get_definition
+
+
+def fetch_acronym_list_online(url, cache_path):
+    """
+    Fetch the acronym list from the online URL.
+    On success, write the file to cache_path and return the path.
+    On failure, if a cached file exists, return that;
+    otherwise, raise an exception.
+    """
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+        with open(cache_path, "w", encoding="utf-8") as f:
+            f.write(response.text)
+        return cache_path
+    except Exception as e:
+        # If fetching failed but a cached file exists, use it.
+        if os.path.exists(cache_path):
+            return cache_path
+        else:
+            raise Exception(f"Failed to fetch acronym list online: {e}")
 
 
 class AcronymsWindow(QMainWindow):
@@ -157,9 +180,22 @@ class AcronymsWindow(QMainWindow):
             if not word_app.Documents.Count:
                 raise Exception("No active word document.")
 
-            dir_path = os.path.dirname(os.path.realpath(__file__))
-            definition_path = os.path.join(
-                dir_path, '..', 'acronyms', 'acronym list.txt')
+            # URL for the acronym list hosted on GitHub.
+            # (Replace 'yourusername' and 'yourrepo' with 
+            # your actual GitHub username and repository.)
+            url = (
+                "https://raw.githubusercontent.com/IIDelta/Doc_Companion/"
+                "main/acronyms/acronym%20list.txt"
+            )
+            # Define a cache path in the user's home directory (hidden folder).
+            cache_path = os.path.join(
+                os.path.expanduser("~"), ".doc_companion", "acronym_list.txt")
+
+            # Try fetching the online acronym
+            #  list (with caching and error handling)
+            definition_path = fetch_acronym_list_online(url, cache_path)
+            print(f"Using acronym list from: {definition_path}")
+
             acronyms = find_acronyms(word_app, definition_path)
 
             for category, table in [("likely", self.likely_table),
@@ -168,11 +204,8 @@ class AcronymsWindow(QMainWindow):
                 table.setRowCount(0)  # Clear the table
                 for acronym, context in acronyms[category].items():
                     table.insertRow(table.rowCount())
-                    table.setItem(
-                        table.rowCount()-1, 0, QTableWidgetItem(acronym))
-                    table.setItem
-                    (table.rowCount()-1, 1, QTableWidgetItem(
-                        get_definition(acronym, definition_path)))
+                    table.setItem(table.rowCount()-1, 0, QTableWidgetItem(acronym))
+                    table.setItem(table.rowCount()-1, 1, QTableWidgetItem(get_definition(acronym, definition_path)))
                     checkbox = QCheckBox()
                     checkbox.setChecked(category != "unlikely")
                     table.setCellWidget(table.rowCount()-1, 2, checkbox)
