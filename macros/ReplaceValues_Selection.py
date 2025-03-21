@@ -1,6 +1,6 @@
 import win32com.client
 from openpyxl import load_workbook
-import re
+
 
 class Macro_ReplaceValues_Selection:
     def __init__(self):
@@ -9,7 +9,7 @@ class Macro_ReplaceValues_Selection:
 
     def load_excel_file(self, excel_file_path):
         self.excel_file = load_workbook(excel_file_path)
-    
+
     def replace_values(self, use_wildcards):
         try:
             if self.word_app is None:
@@ -40,7 +40,7 @@ class Macro_ReplaceValues_Selection:
                         find_text = find_text.replace("?", ".")
                         find_text = find_text.replace("*", ".*")
                         find_text = find_text.replace("[!", "[^")
-                        find_text = find_text.replace("#", "\d")
+                        find_text = find_text.replace("#", "\\d")
                     replacements[find_text] = replace_text
 
             # Iterate through the selection and replace words
@@ -63,7 +63,6 @@ class Macro_ReplaceValues_Selection:
 
         except Exception as e:
             return str(e)
-
 
     def save_document(self):
         if self.word_app is None:
