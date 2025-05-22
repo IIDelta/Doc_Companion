@@ -1,7 +1,17 @@
+import sys
+import os
+import nltk
+
+# --- NLTK data path for PyInstaller ---
+if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+    nltk_data_dir = os.path.join(sys._MEIPASS, 'nltk_data')
+    if nltk_data_dir not in nltk.data.path:
+        nltk.data.path.append(nltk_data_dir)
+# --- End NLTK data path for PyInstaller ---
+
 # Import necessary modules from PyQt5
 from PyQt5.QtWidgets import (QApplication)
 from PyQt5.QtCore import QTimer
-import sys
 from ui.mainwindow import MainWindow
 
 

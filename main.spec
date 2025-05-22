@@ -1,13 +1,28 @@
+# main.spec
 import os
+import sys 
 
 project_dir = os.getcwd()
+
+# This is correctly set to your determined NLTK data path
+nltk_data_path_base = r'C:\Users\jdufour\AppData\Roaming\nltk_data'
 
 a = Analysis(
     ['main.py'],
     pathex=[project_dir],
     binaries=[],
-    datas=[],
-    hiddenimports=[],
+    datas=[
+        ('ui/leaf.png', 'ui'), # For your UI icons
+        # NLTK data correctly referenced
+        (os.path.join(nltk_data_path_base, 'corpora/wordnet'), 'nltk_data/corpora/wordnet'),
+        (os.path.join(nltk_data_path_base, 'corpora/omw-1.4'), 'nltk_data/corpora/omw-1.4'),
+    ],
+    hiddenimports=[
+        'PyQt5.sip',
+        'nltk.corpus.reader.wordnet',
+        'nltk.data',
+        'win32timezone',
+    ],
     hookspath=[],
     runtime_hooks=[],
     excludes=[],
@@ -25,7 +40,7 @@ exe = EXE(
     debug=False,
     strip=False,
     upx=False,
-    console=False,
+    console=False, 
     icon=os.path.join(project_dir, 'leaf.ico'),
 )
 
