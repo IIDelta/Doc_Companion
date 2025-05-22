@@ -22,7 +22,7 @@ CFR	Code of Federal Regulations
 CI	Confidence Interval
 CIOMS	Council for International Organizations of Medical Sciences
 CIOMS	Council for International Organizations of Medical Sciences
-Cl	Chlorine
+Cl	Clearance
 cm	Centimeter
 Cmax	Maximum plasma concentration
 Cmax-ss	Maximum plasma concentration in a dosing interval at Steady State

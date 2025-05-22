@@ -14,30 +14,35 @@ from PyQt5.QtCore import Qt, QTimer
 from macros.Acronyms import find_acronyms, get_definition
 
 
-def fetch_acronym_list_online(url, cache_path):
+# Modify the function signature and internal usage
+def fetch_acronym_list_online(url, base_cache_path): # Renamed parameter
     """
     Fetch the acronym list from the online URL.
-    On success, write the file to cache_path and return the path.
-    On failure, if a cached file exists, return that;
+    On success, write the file to base_cache_path and return the path.
+    On failure, if a cached base file exists, return that;
     otherwise, raise an exception.
     """
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-        os.makedirs(os.path.dirname(cache_path), exist_ok=True)
-        with open(cache_path, "w", encoding="utf-8") as f:
+        # Ensure parent directory for the base cache path exists
+        os.makedirs(os.path.dirname(base_cache_path), exist_ok=True)
+        with open(base_cache_path, "w", encoding="utf-8") as f: # Writes to base_cache_path
             f.write(response.text)
-        return cache_path
+        return base_cache_path
     except Exception as e:
-        # If fetching failed but a cached file exists, use it.
-        if os.path.exists(cache_path):
-            return cache_path
+        if os.path.exists(base_cache_path): # Checks existing base_cache_path
+            return base_cache_path
         else:
-            raise Exception(f"Failed to fetch acronym list online: {e}")
+            raise Exception(f"Failed to fetch base acronym list online: {e}")
 
 
 class AcronymsWindow(QMainWindow):
     def __init__(self, parent=None):
+        self.base_acronym_file_path = None
+        self.user_acronym_file_path = os.path.join(os.path.expanduser("~"), ".doc_companion", "user_acronyms.txt")
+        # Ensure the .doc_companion directory exists
+        os.makedirs(os.path.dirname(self.user_acronym_file_path), exist_ok=True)
         super().__init__(parent)
         self.setWindowTitle("Acronym Finder")
         self.setMinimumSize(800, 600)
@@ -187,26 +192,34 @@ class AcronymsWindow(QMainWindow):
                 "https://raw.githubusercontent.com/IIDelta/Doc_Companion/"
                 "main/acronyms/acronym%20list.txt"
             )
-            # Define a cache path in the user's home directory (hidden folder).
-            cache_path = os.path.join(
-                os.path.expanduser("~"), ".doc_companion", "acronym_list.txt")
+            # Define path for the base list fetched from online
+            doc_companion_dir = os.path.join(os.path.expanduser("~"), ".doc_companion")
+            base_list_filename = "base_acronym_list.txt" # New filename for base list
+            self.base_acronym_file_path = os.path.join(doc_companion_dir, base_list_filename)
 
-            # Try fetching the online acronym
-            #  list (with caching and error handling)
-            definition_path = fetch_acronym_list_online(url, cache_path)
-            print(f"Using acronym list from: {definition_path}")
+            # self.user_acronym_file_path is already set in __init__
 
-            acronyms = find_acronyms(word_app, definition_path)
+            # Fetch the online list into the base file path
+            # fetch_acronym_list_online now ensures its parent directory exists
+            effective_base_path = fetch_acronym_list_online(url, self.base_acronym_file_path)
+            print(f"Using base acronym list from: {effective_base_path}")
+            # Ensure self.base_acronym_file_path reflects the actual path used (could be cache on error)
+            self.base_acronym_file_path = effective_base_path
+
+
+            # find_acronyms and get_definition will need to accept two paths
+            acronyms = find_acronyms(word_app, self.base_acronym_file_path, self.user_acronym_file_path)
 
             for category, table in [("likely", self.likely_table),
                                     ("possible", self.possible_table),
                                     ("unlikely", self.unlikely_table)]:
-                table.setRowCount(0)  # Clear the table
+                table.setRowCount(0)
                 for acronym, context in acronyms[category].items():
                     table.insertRow(table.rowCount())
-                    table.setItem(
-                        table.rowCount()-1, 0, QTableWidgetItem(acronym))
-                    table.setItem(table.rowCount()-1, 1, QTableWidgetItem(get_definition(acronym, definition_path)))
+                    table.setItem(table.rowCount()-1, 0, QTableWidgetItem(acronym))
+                    # get_definition will also need to check both files
+                    definition_text = get_definition(acronym, self.base_acronym_file_path, self.user_acronym_file_path)
+                    table.setItem(table.rowCount()-1, 1, QTableWidgetItem(definition_text))
                     checkbox = QCheckBox()
                     checkbox.setChecked(category != "unlikely")
                     table.setCellWidget(table.rowCount()-1, 2, checkbox)
@@ -217,6 +230,58 @@ class AcronymsWindow(QMainWindow):
             QTimer.singleShot(5000, self.parent().label.clear)
 
     def generate_table(self):
+        # --- Part 1: Save new/updated definitions from UI to user_acronyms.txt ---
+        if self.user_acronym_file_path: # Check if user_acronym_file_path is set
+            user_definitions = {} # Store definitions from user_acronyms.txt
+            try:
+                # Ensure the directory for user_acronym_file_path exists
+                os.makedirs(os.path.dirname(self.user_acronym_file_path), exist_ok=True)
+                with open(self.user_acronym_file_path, 'r', encoding='utf-8') as f_read:
+                    for line in f_read:
+                        line = line.strip()
+                        if '\t' in line:
+                            acr, deph = line.split('\t', 1)
+                            user_definitions[acr] = deph
+            except FileNotFoundError:
+                print(f"Info: User acronym file '{self.user_acronym_file_path}' not found. Will be created if new definitions are added.")
+            except Exception as e:
+                print(f"Error reading user acronym list {self.user_acronym_file_path}: {e}")
+
+            made_changes_to_user_list = False
+            for table_widget in [self.possible_table, self.unlikely_table]: # Or all tables if you want to save from "Likely" too
+                for r in range(table_widget.rowCount()):
+                    acronym_item = table_widget.item(r, 0)
+                    definition_item = table_widget.item(r, 1)
+
+                    if acronym_item and definition_item:
+                        ui_acronym = acronym_item.text().strip()
+                        ui_definition = definition_item.text().strip()
+
+                        if ui_acronym and ui_definition: # Only save if both are non-empty
+                            if ui_acronym not in user_definitions or \
+                            user_definitions[ui_acronym] != ui_definition:
+                                user_definitions[ui_acronym] = ui_definition
+                                made_changes_to_user_list = True
+
+            if made_changes_to_user_list:
+                try:
+                    with open(self.user_acronym_file_path, 'w', encoding='utf-8') as f_write:
+                        for acr, deph in sorted(user_definitions.items()): # Sort for consistency
+                            f_write.write(f"{acr}\t{deph}\n")
+                    print(f"Info: User acronym list '{self.user_acronym_file_path}' updated.")
+                    if self.parent() and hasattr(self.parent(), 'label'):
+                        self.parent().label.setText("User acronym list updated.")
+                        QTimer.singleShot(3000, self.parent().label.clear)
+                except Exception as e:
+                    print(f"Error writing user acronym list to {self.user_acronym_file_path}: {e}")
+                    if self.parent() and hasattr(self.parent(), 'label'):
+                        self.parent().label.setText(f"Error updating user list: {e}")
+                        QTimer.singleShot(5000, self.parent().label.clear)
+        else:
+            print("Warning: User acronym file path not set. Cannot save new definitions.")
+            # ... (optional status message) ...
+
+        # --- Part 2: logic to generate the Word document table ---
         try:
             doc = Document()
 
