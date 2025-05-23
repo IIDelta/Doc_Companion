@@ -14,13 +14,15 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
 
 
 def get_resource_path(relative_path):
-    """ Get the absolute path for a resource, works for dev and for PyInstaller """
+    """ Get the absolute path for a resource,
+    works for dev and for PyInstaller """
     try:
         # PyInstaller creates a temp folder and stores path in _MEIPASS
         base_path = sys._MEIPASS
     except AttributeError:
         # If not running as a PyInstaller bundle, use the script's directory
-        base_path = os.path.abspath(".") # Use current working dir or os.path.dirname(__file__)
+        base_path = os.path.abspath(".")
+        # Use current working dir or os.path.dirname(__file__)
 
     return os.path.join(base_path, relative_path)
 
@@ -38,12 +40,12 @@ def main():
             app.setStyleSheet(f.read())
             print(f"Stylesheet loaded from: {style_path}")
     except FileNotFoundError:
-        print(f"Warning: style.qss not found at {style_path}. Using default styles.") # Log the path
+        print(f"Warning: style.qss not found at {style_path}."
+              "Using default styles.")
+        # Log the path
     except Exception as e:
         print(f"Error loading stylesheet: {e}")
     # --- End stylesheet ---
-
-
     # Create an instance of MainWindow and show it
     main_window = MainWindow()
     main_window.show()

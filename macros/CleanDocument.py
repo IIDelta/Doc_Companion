@@ -1,9 +1,9 @@
 # macros/CleanDocument.py
-import sys
 import os
 import win32com.client as win32
 import time
 import re
+
 
 def generate_clean_filename(file_path):
     """
@@ -64,17 +64,22 @@ def process_word_document(file_path):
         WD_NO_PROTECTION = -1
         messages.append(f"Using Protection Type = {WD_ALLOW_ONLY_REVISIONS}")
 
-        messages.append(f"Opening document: {os.path.basename(absolute_path)}...")
+        messages.append(
+            f"Opening document: {os.path.basename(absolute_path)}...")
         doc = word.Documents.Open(absolute_path)
 
         messages.append("Checking document protection status...")
         if doc.ProtectionType != WD_NO_PROTECTION:
-            messages.append(f"Document is protected (Type: {doc.ProtectionType}). Attempting to unprotect...")
+            messages.append(
+                f"Document is protected (Type: {doc.ProtectionType})."
+                "Attempting to unprotect...")
             try:
                 doc.Unprotect(Password=password)
                 messages.append("Document successfully unprotected.")
             except Exception as unprotect_err:
-                messages.append(f"!!! CRITICAL ERROR: Could not unprotect document: {unprotect_err}")
+                messages.append(
+                    "!!! CRITICAL ERROR: Could not unprotect document:"
+                    f"{unprotect_err}")
                 messages.append("    Aborting processing.")
                 doc.Close(SaveChanges=False)
                 word.Quit()
@@ -110,24 +115,27 @@ def process_word_document(file_path):
             messages.append("No revisions found to accept.")
         time.sleep(1)
 
-        messages.append(f"Applying protection (Using Type={WD_ALLOW_ONLY_REVISIONS})...")
+        messages.append("Applying protection"
+                        f"(Using Type={WD_ALLOW_ONLY_REVISIONS})...")
         doc.Protect(Type=WD_ALLOW_ONLY_REVISIONS, Password=password)
         messages.append("Document protected.")
 
-        messages.append(f"Saving document as: {os.path.basename(new_save_path)}...")
+        messages.append(
+            f"Saving document as: {os.path.basename(new_save_path)}...")
         doc.SaveAs(new_save_path)
         messages.append("Closing original document...")
         doc.Close(SaveChanges=False)
         doc = None
 
         messages.append("-" * 50)
-        messages.append(f"Processing completed successfully! Output: {new_save_path}")
+        messages.append(
+            f"Processing completed successfully! Output: {new_save_path}")
         messages.append("-" * 50)
         return True, messages
 
     except Exception as e:
         messages.append("\n" + "=" * 50)
-        messages.append(f"!!! An Error Occurred !!!")
+        messages.append("!!! An Error Occurred !!!")
         messages.append(f"    Error Type: {type(e).__name__}")
         messages.append(f"    Details: {e}")
         if hasattr(e, 'excepinfo'):
@@ -137,10 +145,14 @@ def process_word_document(file_path):
 
     finally:
         if doc:
-            try: doc.Close(SaveChanges=False)
-            except Exception: pass
+            try:
+                doc.Close(SaveChanges=False)
+            except Exception:
+                pass
         if word:
-            try: word.Quit()
-            except Exception: pass
+            try:
+                word.Quit()
+            except Exception:
+                pass
         word = None
         doc = None

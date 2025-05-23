@@ -1,7 +1,8 @@
 # ui/mainwindow.py
 from PyQt5.QtWidgets import (
-    QMainWindow, QLabel, QPushButton, QVBoxLayout, QHBoxLayout, QWidget, QCheckBox,
-    QMessageBox, QFileDialog
+    QMainWindow, QLabel, QPushButton,
+    QVBoxLayout, QHBoxLayout, QWidget,
+    QCheckBox, QMessageBox, QFileDialog
 )
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QTimer, QCoreApplication
