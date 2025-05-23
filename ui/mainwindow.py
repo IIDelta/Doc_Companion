@@ -40,10 +40,10 @@ class MainWindow(QMainWindow):
         self.setFixedSize(400, 250)
 
         # --- Icon Paths ---
-        icon_path = self.get_resource_path("/icons/leaf.ico")
-        replace_icon_path = self.get_resource_path("/icons/replace.ico")
-        acronym_icon_path = self.get_resource_path("/icons/acronym.ico")
-        clean_icon_path = self.get_resource_path("/icons/clean.ico")
+        icon_path = self.get_resource_path("leaf.ico")
+        replace_icon_path = self.get_resource_path("replace.ico")
+        acronym_icon_path = self.get_resource_path("acronym.ico")
+        clean_icon_path = self.get_resource_path("clean.ico")
         # --- End Icon Paths ---
 
         self.setWindowIcon(QIcon(icon_path))

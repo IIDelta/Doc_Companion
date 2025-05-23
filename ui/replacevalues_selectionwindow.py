@@ -65,8 +65,8 @@ class ReplaceValuesSelectionWindow(QMainWindow):
         self.setFixedSize(450, 180)
 
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        leaf_icon_path = os.path.join(dir_path, "leaf.png")
-        excel_icon_path = os.path.join(dir_path, "excel.png")
+        leaf_icon_path = os.path.join(dir_path, "leaf.ico")
+        excel_icon_path = os.path.join(dir_path, "excel.ico")
         self.setWindowIcon(QIcon(leaf_icon_path))
 
         self.layout = QVBoxLayout()

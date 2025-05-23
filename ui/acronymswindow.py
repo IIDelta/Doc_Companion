@@ -53,8 +53,8 @@ class AcronymsWindow(QMainWindow):
 
         # --- Icon Paths ---
         dir_path = os.path.dirname(os.path.realpath(__file__))
-        leaf_icon_path = os.path.join(dir_path, "/icons/leaf.ico")
-        add_icon_path = os.path.join(dir_path, "/icons/add.ico")
+        leaf_icon_path = os.path.join(dir_path, "leaf.ico")
+        add_icon_path = os.path.join(dir_path, "add.ico")
         self.setWindowIcon(QIcon(leaf_icon_path))
         add_icon = QIcon(add_icon_path)
         # --- End Icon Paths --- 
