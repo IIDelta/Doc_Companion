@@ -1,0 +1,168 @@
+/* style.qss */
+
+QWidget {
+    background-color: #F5F5F5; /* Light gray background */
+    color: #333333; /* Dark gray text */
+    font-family: 'Segoe UI', Arial, sans-serif; /* Clean font */
+    font-size: 10pt;
+}
+
+QMainWindow, QDialog {
+    background-color: #FFFFFF; /* White background for main windows */
+}
+
+QLabel {
+    background-color: transparent; /* Labels should blend in */
+    padding: 2px;
+}
+
+QPushButton {
+    background-color: #5E2D91; /* Primary purple */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px; /* Rounded corners */
+    font-weight: bold;
+    min-height: 32px; /* <<< Set standard height */
+    max-height: 32px; /* <<< Set standard height */
+}
+
+QPushButton:hover {
+    background-color: #3C1A56; /* Darker purple on hover */
+}
+
+QPushButton:pressed {
+    background-color: #2E1443; /* Even darker on press */
+}
+
+/* Style for the new Add (+) button by object name */
+QPushButton#AddButton {
+    background-color: #5E2D91;
+    color: white;
+    padding: 4px 4px;
+    border-radius: 16px; /* <<< Make it perfectly round */
+    min-width: 32px;  /* <<< Match height */
+    max-width: 32px;
+    min-height: 32px; /* <<< Match height */
+    max-height: 32px;
+    font-weight: bold;
+    font-size: 16pt; /* Make '+' bigger */
+}
+
+QPushButton#AddButton:hover {
+    background-color: #3C1A56;
+}
+
+QPushButton#CheckUncheckButton {
+    background-color: #E8E0F1; /* Light purple background */
+    color: #3C1A56; /* Dark purple text */
+    font-weight: bold;
+    text-align: center;
+    padding: 6px 10px;
+    border: 1px solid #C0C0C0; /* Add a border */
+    border-radius: 4px; /* Standard radius */
+    min-width: 80px;
+    min-height: 32px; /* <<< Match height */
+    max-height: 32px; /* <<< Match height */
+}
+QPushButton#CheckUncheckButton:hover {
+    background-color: #D6C4E9; /* Darker hover */
+    border-color: #5E2D91;
+    text-decoration: none; /* No underline */
+}
+QPushButton#CheckUncheckButton:pressed {
+    background-color: #C5B0DE;
+}
+
+
+QCheckBox {
+    spacing: 5px; /* Space between checkbox and text */
+}
+
+QCheckBox::indicator {
+    width: 13px;
+    height: 13px;
+}
+
+QCheckBox::indicator:unchecked {
+    border: 1px solid #AAAAAA;
+    background-color: #FFFFFF;
+    border-radius: 2px;
+}
+
+QCheckBox::indicator:checked {
+    border: 1px solid #5E2D91;
+    background-color: #5E2D91;
+    border-radius: 2px;
+}
+
+QTableWidget {
+    background-color: #FFFFFF;
+    border: 1px solid #E0E0E0; /* Lighter border */
+    gridline-color: #E0E0E0;
+    selection-background-color: #D6C4E9; /* Lighter purple selection */
+    selection-color: #333333;
+    alternate-background-color: #F8F4FC; /* Light purple stripes */
+}
+
+QTableWidget::item {
+    padding: 5px;
+}
+
+/* Add Table Row Hover Effect */
+QTableWidget::item:hover {
+    background-color: #E8E0F1; /* Light purple hover */
+}
+
+QHeaderView::section {
+    background-color: #E8E0F1; /* Light purple header */
+    color: #3C1A56;
+    padding: 4px;
+    border: 1px solid #E0E0E0;
+    font-weight: bold;
+}
+
+QTabWidget::pane { /* The tab widget frame */
+    border-top: 1px solid #C0C0C0; /* Slightly darker border */
+    background-color: #FFFFFF; /* Ensure pane is white */
+}
+
+QTabBar::tab {
+    background: #E8E8E8; /* Slightly lighter gray tabs */
+    color: #555555;
+    border: 1px solid #C8C8C8;
+    padding: 7px 18px; /* Adjusted padding */
+    margin-right: 2px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom-color: #C0C0C0; /* Match pane top border */
+}
+
+QTabBar::tab:selected {
+    background: #FFFFFF; /* Match pane background - makes it look connected */
+    color: #5E2D91; /* Keep purple color */
+    border: 1px solid #C0C0C0;
+    border-bottom-color: #FFFFFF; /* Make bottom border 'invisible' */
+    /* font-weight: bold; */ /* BOLDING REMOVED */
+    margin-bottom: -1px; /* Pull down to cover pane's top border */
+    padding: 7px 18px; /* Use same padding as non-selected */
+}
+
+QTabBar::tab:!selected:hover {
+    background: #D5D5D5;
+}
+
+QLineEdit, QTextEdit {
+    background-color: #FFFFFF;
+    border: 1px solid #C0C0C0;
+    border-radius: 3px;
+    padding: 4px;
+}
+
+QLineEdit:focus, QTextEdit:focus {
+    border: 1px solid #5E2D91;
+}
+
+QTextEdit {
+    font-size: 9pt; /* Adjust for wildcards info */
+}

@@ -41,7 +41,7 @@ exe = EXE(
     strip=False,
     upx=False,
     console=False, 
-    icon=os.path.join(project_dir, 'leaf.ico'),
+    icon=os.path.join(project_dir, '/icons/leaf.ico'),
 )
 
 coll = COLLECT(
