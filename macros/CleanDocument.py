@@ -32,7 +32,7 @@ def generate_clean_filename(file_path):
     return os.path.join(dir_name, new_filename)
 
 
-def process_word_document(file_path, password):
+def process_word_document(file_path):
     """
     Opens a Word document, performs processing, and saves it as a copy.
     Returns a tuple (success: bool, messages: list[str]).
@@ -41,6 +41,7 @@ def process_word_document(file_path, password):
     doc = None
     absolute_path = os.path.abspath(file_path)
     messages = []
+    password = "pwdMW001"  # Hardcoded password
 
     messages.append("-" * 50)
     messages.append(f"Starting processing for: {absolute_path}")

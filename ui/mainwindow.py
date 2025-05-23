@@ -145,34 +145,23 @@ class MainWindow(QMainWindow):
             return
         # --- End File Dialog ---
 
-        # Proceed to get the password
-        password, ok = QInputDialog.getText(
-            self, "Password Required", "Enter the document password:", QLineEdit.Password
-        )
+        try:
+            self.label.setText(f"Processing {os.path.basename(file_path)}... Please wait.")
+            QApplication.processEvents() # Update UI to show the message
 
-        if ok and password:
-            try:
-                self.label.setText(f"Processing {os.path.basename(file_path)}... Please wait.")
-                QApplication.processEvents() # Update UI to show the message
+            # Call the processing function with the selected file path
+            success, messages = process_word_document(file_path)
 
-                # Call the processing function with the selected file path
-                success, messages = process_word_document(file_path, password)
+            log_message = "\n".join(messages)
+            if success:
+                QMessageBox.information(self, "Success", f"Processing finished for {os.path.basename(file_path)}.\n\nLog:\n{log_message}")
+            else:
+                QMessageBox.critical(self, "Error", f"Processing failed for {os.path.basename(file_path)}.\n\nLog:\n{log_message}")
 
-                log_message = "\n".join(messages)
-                if success:
-                    QMessageBox.information(self, "Success", f"Processing finished for {os.path.basename(file_path)}.\n\nLog:\n{log_message}")
-                else:
-                    QMessageBox.critical(self, "Error", f"Processing failed for {os.path.basename(file_path)}.\n\nLog:\n{log_message}")
-
-            except Exception as e:
-                QMessageBox.critical(self, "Error", f"An unexpected error occurred: {str(e)}")
-            finally:
-                self.label.clear() # Clear the status label
-        elif ok:
-             QMessageBox.warning(self, "Input Error", "Password cannot be empty for processing.")
-        else:
-            self.label.setText("Cleaning cancelled (no password entered).")
-            QTimer.singleShot(3000, self.label.clear)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"An unexpected error occurred: {str(e)}")
+        finally:
+            self.label.clear() # Clear the status label
     # --- End Modified Method ---
 
     def toggle_stay_on_top(self, checked):
