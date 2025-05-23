@@ -12,6 +12,7 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         nltk.data.path.append(nltk_data_dir)
 # --- End NLTK data path for PyInstaller ---
 
+
 def get_resource_path(relative_path):
     """ Get the absolute path for a resource, works for dev and for PyInstaller """
     try:
@@ -22,6 +23,7 @@ def get_resource_path(relative_path):
         base_path = os.path.abspath(".") # Use current working dir or os.path.dirname(__file__)
 
     return os.path.join(base_path, relative_path)
+
 
 # This is the main function that starts the application
 def main():

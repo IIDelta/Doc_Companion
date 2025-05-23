@@ -8,7 +8,7 @@ from PyQt5.QtCore import Qt, QTimer, QCoreApplication
 import os
 import sys
 import win32com.client
-from .acronymswindow import fetch_acronym_list_online # Use relative import
+from .acronymswindow import fetch_acronym_list_online  # Use relative import
 
 try:
     from macros.CleanDocument import process_word_document
@@ -20,7 +20,8 @@ except ImportError:
 class MainWindow(QMainWindow):
     @staticmethod
     def get_resource_path(relative_path):
-        """ Get the absolute path for a resource, works for dev and for PyInstaller """
+        """ Get the absolute path for a resource,
+        works for dev and for PyInstaller """
         try:
             # PyInstaller creates a temp folder and stores path in _MEIPASS
             base_path = sys._MEIPASS
@@ -28,9 +29,12 @@ class MainWindow(QMainWindow):
             # We assume icons are in a 'ui' subdir *within* the bundle
             return os.path.join(base_path, 'ui', relative_path)
         except AttributeError:
-            # If not running as a PyInstaller bundle, use the script's directory
-            # Go up one level from 'ui' to the project root, then down to 'ui'
-            base_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            # If not running as a PyInstaller bundle,
+            # use the script's directory
+            # Go up one level from 'ui' to the project root,
+            # then down to 'ui'
+            base_path = os.path.dirname(
+                os.path.dirname(os.path.abspath(__file__)))
             return os.path.join(base_path, 'ui', relative_path)
 
     def __init__(self):
@@ -110,7 +114,8 @@ class MainWindow(QMainWindow):
 
     def open_replace_values_selection_window(self):
         from .replacevalues_selectionwindow import ReplaceValuesSelectionWindow
-        if self.replace_values_window is not None and self.replace_values_window.isVisible():
+        if (self.replace_values_window is not None and
+                self.replace_values_window.isVisible()):
             self.replace_values_window.activateWindow()
         else:
             self.replace_values_window = ReplaceValuesSelectionWindow(self)
@@ -118,7 +123,8 @@ class MainWindow(QMainWindow):
 
     def open_acronyms_window(self):
         from .acronymswindow import AcronymsWindow
-        if self.acronyms_window is not None and self.acronyms_window.isVisible():
+        if (self.acronyms_window is not None and
+                self.acronyms_window.isVisible()):
             self.acronyms_window.activateWindow()
         else:
             self.acronyms_window = AcronymsWindow(self)
@@ -126,7 +132,9 @@ class MainWindow(QMainWindow):
 
     def run_clean_document(self):
         if process_word_document is None:
-            QMessageBox.critical(self, "Error", "Clean Document module failed to load.")
+            QMessageBox.critical(self,
+                                 "Error",
+                                 "Clean Document module failed to load.")
             return
 
         options = QFileDialog.Options()
@@ -140,19 +148,28 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            self.label.setText(f"Processing {os.path.basename(file_path)}... Please wait.")
+            self.label.setText(
+                f"Processing {os.path.basename(file_path)}... Please wait.")
             QCoreApplication.processEvents()
 
             success, messages = process_word_document(file_path)
 
             log_message = "\n".join(messages)
             if success:
-                QMessageBox.information(self, "Success", f"Processing finished.\n\nLog:\n{log_message}")
+                QMessageBox.information(self,
+                                        "Success",
+                                        f"Processing finished.\n\nLog:\n{
+                                            log_message}")
             else:
-                QMessageBox.critical(self, "Error", f"Processing failed.\n\nLog:\n{log_message}")
+                QMessageBox.critical(self,
+                                     "Error",
+                                     f"Processing failed.\n\nLog:\n{
+                                        log_message}")
 
         except Exception as e:
-            QMessageBox.critical(self, "Error", f"An unexpected error occurred: {str(e)}")
+            QMessageBox.critical(self,
+                                 "Error",
+                                 f"An unexpected error occurred: {str(e)}")
         finally:
             self.label.clear()
 
@@ -164,11 +181,13 @@ class MainWindow(QMainWindow):
             self.setWindowFlags(flags & ~Qt.WindowStaysOnTopHint)
         self.show()
 
-        if self.replace_values_window is not None and self.replace_values_window.isVisible():
-             self.replace_values_window.update_stay_on_top()
+        if (self.replace_values_window is not None and
+                self.replace_values_window.isVisible()):
+            self.replace_values_window.update_stay_on_top()
 
-        if self.acronyms_window is not None and self.acronyms_window.isVisible():
-             self.acronyms_window.update_stay_on_top()
+        if (self.acronyms_window is not None and
+                self.acronyms_window.isVisible()):
+            self.acronyms_window.update_stay_on_top()
 
     def prefetch_acronyms(self):
         try:
