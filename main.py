@@ -12,6 +12,17 @@ if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
         nltk.data.path.append(nltk_data_dir)
 # --- End NLTK data path for PyInstaller ---
 
+def get_resource_path(relative_path):
+    """ Get the absolute path for a resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except AttributeError:
+        # If not running as a PyInstaller bundle, use the script's directory
+        base_path = os.path.abspath(".") # Use current working dir or os.path.dirname(__file__)
+
+    return os.path.join(base_path, relative_path)
+
 # This is the main function that starts the application
 def main():
     # Create a QApplication, which is necessary for any PyQt application
@@ -19,14 +30,13 @@ def main():
 
     # --- Load and apply the stylesheet ---
     try:
-        # Construct path relative to the script location
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        style_path = os.path.join(dir_path, 'ui', 'style.qss')
+        # Construct path using the new function
+        style_path = get_resource_path(os.path.join('ui', 'style.qss'))
         with open(style_path, "r") as f:
             app.setStyleSheet(f.read())
             print(f"Stylesheet loaded from: {style_path}")
     except FileNotFoundError:
-        print("Warning: style.qss not found. Using default styles.")
+        print(f"Warning: style.qss not found at {style_path}. Using default styles.") # Log the path
     except Exception as e:
         print(f"Error loading stylesheet: {e}")
     # --- End stylesheet ---

@@ -53,10 +53,15 @@ hiddenimports = [
 
 a = Analysis(
     ['main.py'],
-    pathex=[project_root],
+    pathex=['C:\\path\\to\\your\\project'], # Ensure this points to your project root
     binaries=[],
-    datas=datas,
-    hiddenimports=hiddenimports,
+    datas=[
+        ('ui/style.qss', 'ui'),  # Copy style.qss into a 'ui' folder
+        ('ui/*.ico', 'ui'),      # Copy all .ico files into the 'ui' folder
+        # Add any other data files here, like your acronym list if not fetched online
+        # ('acronyms/acronym list.txt', 'acronyms') # Example
+    ],
+    hiddenimports=['nltk.corpus.wordnet'], # Make sure WordNet is included
     hookspath=[],
     runtime_hooks=[],
     excludes=[],

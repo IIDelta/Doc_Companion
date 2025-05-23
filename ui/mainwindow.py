@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.active_doc_path = None
-        self.setWindowTitle("Nutrasource Copilot")
+        self.setWindowTitle("Doc Companion")
         self.setFixedSize(400, 250)
 
         # --- Icon Paths ---
