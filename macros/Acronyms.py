@@ -3,17 +3,21 @@ from nltk.corpus import wordnet
 import re
 
 
-def find_acronyms(word_app, base_definition_path, user_definition_path, context_range=5):
+def find_acronyms(
+        word_app, base_definition_path, user_definition_path, context_range=5):
     # Determine base path for custom lists.
     # Uses the directory of the main definition_path for custom user lists.
     # The main definition_path is cached at:
-    # os.path.join(os.path.expanduser("~"), ".doc_companion", "acronym_list.txt")
-    # So, user_exclude.txt and user_include.txt should be placed in ~/.doc_companion/
+    # os.path.join(os.path.expanduser("~"),
+    # ".doc_companion", "acronym_list.txt")
+    # So, user_exclude.txt and user_include.txt
+    # should be placed in ~/.doc_companion/
     user_config_dir = os.path.dirname(user_definition_path)
     base_defs_map = _load_definitions_from_file(base_definition_path)
     user_defs_map = _load_definitions_from_file(user_definition_path)
     combined_defs_map = {**base_defs_map, **user_defs_map}
-    defined_acronyms = set(combined_defs_map.keys()) # This set is used for 'word in defined_acronyms' checks
+    defined_acronyms = set(combined_defs_map.keys())
+    # This set is used for 'word in defined_acronyms' checks
     exclude_filepath = os.path.join(user_config_dir, "user_exclude.txt")
     include_filepath = os.path.join(user_config_dir, "user_include.txt")
 
@@ -136,9 +140,6 @@ def find_acronyms(word_app, base_definition_path, user_definition_path, context_
                 acronyms.setdefault('possible', {})[acronym] = acronyms['likely'][acronym]
                 del acronyms['likely'][acronym]
 
-# ... (this comes after the main loop that iterates through word_list
-    #      and also after the loop that moves likely acronyms without definitions to possible)
-
     for phrase_to_include in include:
         # Case-insensitive check for the presence of the phrase in the text
         if phrase_to_include.lower() in text.lower():
@@ -155,7 +156,8 @@ def find_acronyms(word_app, base_definition_path, user_definition_path, context_
                 # This can happen if text.lower().index fails, though 'in' check passed (e.g. complex unicode)
                 print(f"Warning: Phrase '{phrase_to_include}' found by 'in' but not by index().")
             except Exception as e:
-                print(f"Warning: Error getting context for included phrase '{phrase_to_include}': {e}")
+                print("Warning: Error getting context for included phrase"
+                      f"'{phrase_to_include}': {e}")
 
             # Categorize the included phrase
             if phrase_to_include in defined_acronyms:
