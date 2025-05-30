@@ -11,6 +11,8 @@ from PyQt5.QtGui import QIcon
 from docx import Document
 from PyQt5.QtCore import Qt
 
+# try to import our functions for finding acronyms
+# checking definitions from our acronyms module
 try:
     from macros.Acronyms import find_acronyms, get_definition
 except ImportError:
