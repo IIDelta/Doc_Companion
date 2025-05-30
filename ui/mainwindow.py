@@ -86,6 +86,7 @@ class MainWindow(QMainWindow):
         replace_icon_path = self.get_resource_path("replace.ico")
         acronym_icon_path = self.get_resource_path("acronym.ico")
         clean_icon_path = self.get_resource_path("clean.ico")
+        ref_icon_path = self.get_resource_path("audit.ico")
         # --- End Icon Paths ---
 
         # Set the main window icon (title bar and taskbar)
@@ -151,6 +152,16 @@ class MainWindow(QMainWindow):
         self.clean_doc_button.clicked.connect(self.run_clean_document)
         # add the button to the layout
         self.layout.addWidget(self.clean_doc_button)
+
+        # create the reference finder button
+        self.reference_finder_button = QPushButton(
+            QIcon(ref_icon_path), " Reference/Open-Access Finder", self)
+        # when this button is pressed launch
+        # the ui for this part of the program
+        self.reference_finder_button.clicked.connect(
+            self.open_ref_finder_window)
+        # add the button to the vertical layout
+        self.layout.addWidget(self.reference_finder_button)
 
         # Add a stretchable space. Pushes the label down towards the bottom
         # of the window, filling any vertical space above
@@ -243,6 +254,10 @@ class MainWindow(QMainWindow):
         else:
             self.acronyms_window = AcronymsWindow(self)
             self.acronyms_window.show()
+    
+    def open_ref_finder_window(self):
+        # opens the reference finder window
+ 
 
     def run_clean_document(self):
         """
