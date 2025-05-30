@@ -27,6 +27,16 @@ Doc\_Companion offers several tools to enhance your document workflow:
     * Applies protection to the document, allowing only revisions (requires a predefined password for unprotection within the tool).
     * Saves the processed file as a new copy with a `_clean` suffix added to its name.
 
+4.  **Reference/Open-Access Finder:**
+    * **Locates DOIs** from a list of references.
+    * **Checks for Open Access (OA) availability** via Unpaywall and Semantic Scholar.
+    * **Downloads available PDFs** to a specified output folder.
+    * Provides a **live log** of the processing steps.
+    * Displays a **categorized summary** of results (Downloaded PDFs, OA no PDF, Paywalled, DOI Not Found, etc.).
+    * **New:** Accepts references either from a **`.txt` file** or directly from your **clipboard**.
+    * **New:** Includes a **"Cancel" button** to stop the processing mid-way if needed.
+    * Allows **copying the full summary** to your clipboard for easy sharing or record-keeping.
+
 ## Usage
 
 1.  **Main Window:**
@@ -50,7 +60,15 @@ Doc\_Companion offers several tools to enhance your document workflow:
     * Use the "Check/Uncheck All" buttons for quick selection.
     * Click "Generate Table" and choose a location to save your new Word document.
 
-4.  **Clean & Protect:**
+4.  **Reference/Open-Access Finder:**
+    * Click "Reference/Open-Access Finder".
+    * **Choose an output folder** where downloaded PDFs will be saved.
+    * **To process from a file:** Click "Select Input File (.txt)" and choose your references file, then click "Start Processing (File)".
+    * **To process from clipboard:** Copy your list of references to your system clipboard, then click "Process from Clipboard".
+    * **To stop an ongoing process:** Click the "Cancel Process" button.
+    * Once processing is complete (or cancelled), click "Copy Summary" to get a detailed overview of the results in your clipboard.
+
+5.  **Clean & Protect:**
     * Click "Clean & Protect Document".
     * Select the Word document you wish to process.
     * The tool will perform the cleaning actions and save a new file. A log of actions will be displayed.

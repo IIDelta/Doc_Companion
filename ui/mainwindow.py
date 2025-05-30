@@ -196,6 +196,7 @@ class MainWindow(QMainWindow):
         # other windows
         self.acronyms_window = None
         self.replace_values_window = None
+        self.ref_finder_window = None
         # call the function to update our active document once
         # immediately when the window starts
         self.update_active_document()
@@ -254,10 +255,16 @@ class MainWindow(QMainWindow):
         else:
             self.acronyms_window = AcronymsWindow(self)
             self.acronyms_window.show()
-    
+
     def open_ref_finder_window(self):
         # opens the reference finder window
- 
+        from .ref_finder_window import RefFinderWindow
+        if (self.ref_finder_window is not None and
+                self.ref_finder_window.isVisible()):
+            self.ref_finder_window.activateWindow()
+        else:
+            self.ref_finder_window = RefFinderWindow(self)
+            self.ref_finder_window.show()
 
     def run_clean_document(self):
         """
@@ -364,6 +371,9 @@ class MainWindow(QMainWindow):
         if (self.acronyms_window is not None and
                 self.acronyms_window.isVisible()):
             self.acronyms_window.update_stay_on_top()
+        if (self.ref_finder_window is not None and
+                self.ref_finder_window.isVisible()):
+            self.ref_finder_window.update_stay_on_top()
 
     def prefetch_acronyms(self):
         # to prefetch our acronym list, wrapped in try except in case it fails

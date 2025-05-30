@@ -1,264 +1,367 @@
+# ui/ref_finder_window.py
+from PyQt5.QtWidgets import (
+    QMainWindow, QVBoxLayout, QHBoxLayout, QWidget, QPushButton, QLabel,
+    QFileDialog, QTextEdit, QMessageBox, QTreeWidget, QTreeWidgetItem,
+    QHeaderView, QSplitter, QApplication
+)
+from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt, QTimer, QThread, pyqtSignal, QCoreApplication
+
 import os
-import tkinter as tk
-from tkinter import filedialog, scrolledtext, messagebox, ttk
-import threading
+import sys
 import queue
+import threading
+import traceback
+
+# Import the backend processing functions and constants
 from macros.RefFinder import UNPAYWALL_EMAIL, process_references_backend
 
-# --- GUI Application ---
-class App:
-    def __init__(self, root_window):
-        self.root = root_window
-        self.root.title("Open Access Reference Checker")
+# This function should ideally be imported or provided by the main application
+# For now, replicate it here for standalone testing/clarity.
+# In your main app, you should just get it from MainWindow.get_resource_path
+def get_resource_path(relative_path):
+    """
+    Get the absolute path for resources (like icons)
+    This static method helps find files whether running from source or
+    as a bundle.
+    """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+        # For PyInstaller, resources are usually in the root or a subdir
+        # We assume icons are in a 'ui' subdir *within* the bundle
+        return os.path.join(base_path, 'ui', relative_path)
+    except AttributeError:
+        # If not running as a PyInstaller bundle,
+        # use the script's directory
+        # Go up one level from 'ui' to the project root,
+        # then down to 'ui'
+        base_path = os.path.dirname(
+            os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(base_path, 'ui', relative_path)
 
-        self.input_file_path = tk.StringVar()
-        self.output_folder_path = tk.StringVar()
+
+class RefFinderWindow(QMainWindow):
+    # Define a custom signal for thread-safe GUI updates
+    # This signal will carry a dictionary with 'type' (log/summary_add) and data
+    gui_update_signal = pyqtSignal(dict)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Open Access Reference Checker")
+        self.setMinimumSize(900, 700) # Increased size for better layout
+
+        self.input_file_path = ""
+        self.output_folder_path = ""
         self.processing_thread = None
         self.gui_update_queue = queue.Queue()
 
+        # Connect the custom signal to the queue processing slot
+        self.gui_update_signal.connect(self.process_gui_queue_item)
+
+        # --- Icon Paths ---
+        # Using the helper function to get resource paths
+        icon_path = get_resource_path("leaf.ico")
+        folder_icon_path = get_resource_path("folder.ico")
+        file_icon_path = get_resource_path("file.ico")
+        clipboard_icon_path = get_resource_path("clipboard.ico") # Assuming you have this icon
+        self.setWindowIcon(QIcon(icon_path))
+        # --- End Icon Paths ---
+
+        # Central Widget and Layout
+        self.central_widget = QWidget()
+        self.main_layout = QVBoxLayout(self.central_widget)
+        self.setCentralWidget(self.central_widget)
+
         # --- Top frame for controls ---
-        controls_frame = tk.Frame(self.root)
-        controls_frame.pack(fill=tk.X, padx=10, pady=(10,0))
+        controls_frame_layout = QHBoxLayout()
 
-        tk.Button(controls_frame, text="Select Input File (.txt)", command=self.select_input_file).pack(side=tk.LEFT, padx=5, pady=5)
-        self.input_file_label = tk.Label(controls_frame, textvariable=self.input_file_path, relief=tk.GROOVE, width=30, anchor='w', justify=tk.LEFT) # Adjusted width
-        self.input_file_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5, pady=5)
+        # Input via File
+        self.select_input_file_button = QPushButton(QIcon(file_icon_path), "Select Input File (.txt)", self)
+        self.select_input_file_button.clicked.connect(self.select_input_file)
+        controls_frame_layout.addWidget(self.select_input_file_button)
 
-        tk.Button(controls_frame, text="Select Output Folder", command=self.select_output_folder).pack(side=tk.LEFT, padx=5, pady=5)
-        self.output_folder_label = tk.Label(controls_frame, textvariable=self.output_folder_path, relief=tk.GROOVE, width=30, anchor='w', justify=tk.LEFT) # Adjusted width
-        self.output_folder_label.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=5, pady=5)
+        self.input_file_label = QLabel("No file selected.", self)
+        self.input_file_label.setObjectName("FilePathLabel") # For QSS styling
+        self.input_file_label.setMinimumWidth(150) # Give it some width
+        self.input_file_label.setWordWrap(True)
+        controls_frame_layout.addWidget(self.input_file_label)
         
-        self.start_button = tk.Button(controls_frame, text="Start Processing", command=self.start_processing_thread, font=("Arial", 12, "bold"), bg="lightblue")
-        self.start_button.pack(side=tk.LEFT, pady=5, padx=(10,5), ipady=5) # Adjusted padding
+        # Spacer
+        controls_frame_layout.addStretch(1)
 
-        # --- NEW: Button to copy summary ---
-        self.copy_summary_button = tk.Button(controls_frame, text="Copy Summary", command=self.copy_summary_to_clipboard)
-        self.copy_summary_button.pack(side=tk.LEFT, padx=5, pady=5, ipady=2)
+        # Output Folder
+        self.select_output_folder_button = QPushButton(QIcon(folder_icon_path), "Select Output Folder", self)
+        self.select_output_folder_button.clicked.connect(self.select_output_folder)
+        controls_frame_layout.addWidget(self.select_output_folder_button)
 
-
-        # --- Main PanedWindow to divide summary and log ---
-        self.paned_window = tk.PanedWindow(self.root, orient=tk.VERTICAL, sashrelief=tk.RAISED)
-        self.paned_window.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
-
-        # --- Summary Treeview Frame (Top pane of PanedWindow) ---
-        summary_frame = tk.Frame(self.paned_window, relief=tk.GROOVE, borderwidth=2)
-        self.paned_window.add(summary_frame, height=300) # Adjusted initial height
-
-        summary_label = tk.Label(summary_frame, text="Live Summary:", font=("Arial", 10, "bold"))
-        summary_label.pack(pady=(5,0), anchor='w', padx=5)
+        self.output_folder_label = QLabel("No folder selected.", self)
+        self.output_folder_label.setObjectName("FilePathLabel") # For QSS styling
+        self.output_folder_label.setMinimumWidth(150) # Give it some width
+        self.output_folder_label.setWordWrap(True)
+        controls_frame_layout.addWidget(self.output_folder_label)
         
-        self.summary_tree = ttk.Treeview(summary_frame, columns=("DOI", "TitleInfo", "URL"), show="headings") # Renamed StatusInfo to TitleInfo
-        self.summary_tree.heading("DOI", text="DOI")
-        self.summary_tree.heading("TitleInfo", text="Title -- Status / File / Note") # Combined for better display
-        self.summary_tree.heading("URL", text="Relevant URL")
+        # Spacer
+        controls_frame_layout.addStretch(1)
+
+        self.main_layout.addLayout(controls_frame_layout)
+
+        # --- Processing Buttons Layout ---
+        # This will hold the file/clipboard buttons and the copy summary button
+        processing_actions_layout = QHBoxLayout() 
+
+        # Left group: File and Clipboard processing buttons (stacked vertically)
+        file_clipboard_buttons_layout = QVBoxLayout()
+        self.start_file_processing_button = QPushButton("Start Processing (File)", self)
+        self.start_file_processing_button.clicked.connect(self.start_file_processing)
+        self.start_file_processing_button.setMinimumHeight(30)
+        self.start_file_processing_button.setObjectName("PrimaryButton")
+        file_clipboard_buttons_layout.addWidget(self.start_file_processing_button)
+
+        self.process_from_clipboard_button = QPushButton(QIcon(clipboard_icon_path), "Process from Clipboard", self)
+        self.process_from_clipboard_button.clicked.connect(self.start_clipboard_processing)
+        self.process_from_clipboard_button.setMinimumHeight(30)
+        file_clipboard_buttons_layout.addWidget(self.process_from_clipboard_button)
         
-        self.summary_tree.column("DOI", width=150, anchor='w', stretch=tk.NO)
-        self.summary_tree.column("TitleInfo", width=400, anchor='w') # Main info column
-        self.summary_tree.column("URL", width=250, anchor='w', stretch=tk.NO)
+        processing_actions_layout.addLayout(file_clipboard_buttons_layout) # Add the vertical group to the horizontal layout
+
+        # Spacer between processing buttons and copy summary
+        processing_actions_layout.addStretch(1)
+        
+        # Right group: Copy Summary button
+        self.copy_summary_button = QPushButton("Copy Summary", self)
+        self.copy_summary_button.clicked.connect(self.copy_summary_to_clipboard)
+        self.copy_summary_button.setEnabled(False) # Disabled until processing finishes
+        processing_actions_layout.addWidget(self.copy_summary_button)
+
+        self.main_layout.addLayout(processing_actions_layout) # Add this new overall horizontal layout to main
 
 
-        summary_vsb = ttk.Scrollbar(summary_frame, orient="vertical", command=self.summary_tree.yview)
-        summary_hsb = ttk.Scrollbar(summary_frame, orient="horizontal", command=self.summary_tree.xview)
-        self.summary_tree.configure(yscrollcommand=summary_vsb.set, xscrollcommand=summary_hsb.set)
+        # --- Main Splitter to divide summary and log ---
+        self.splitter = QSplitter(Qt.Vertical)
+        self.main_layout.addWidget(self.splitter)
+
+        # --- Summary Treeview Frame (Top pane of Splitter) ---
+        summary_widget = QWidget()
+        summary_layout = QVBoxLayout(summary_widget)
+        summary_layout.setContentsMargins(0, 0, 0, 0)
         
-        summary_vsb.pack(side=tk.RIGHT, fill=tk.Y)
-        summary_hsb.pack(side=tk.BOTTOM, fill=tk.X)
-        self.summary_tree.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        summary_label = QLabel("Live Summary:", self)
+        summary_label.setObjectName("SectionHeader")
+        summary_layout.addWidget(summary_label)
+        
+        self.summary_tree = QTreeWidget(self)
+        self.summary_tree.setHeaderLabels(["DOI", "Title / Status / File", "URL"])
+        self.summary_tree.header().setSectionResizeMode(0, QHeaderView.Interactive)
+        self.summary_tree.header().setSectionResizeMode(1, QHeaderView.Stretch) # Title/Status column stretches
+        self.summary_tree.header().setSectionResizeMode(2, QHeaderView.Interactive)
+        self.summary_tree.setColumnWidth(0, 150)
+        self.summary_tree.setColumnWidth(2, 250)
+        self.summary_tree.setSelectionBehavior(QTreeWidget.SelectRows) # Select full row
+        summary_layout.addWidget(self.summary_tree)
+        self.splitter.addWidget(summary_widget)
 
         self.tree_categories = {
-            'downloaded_pdf': self.summary_tree.insert("", tk.END, iid="cat_downloaded", text="✅ Downloaded PDFs", open=True),
-            'open_access_no_pdf_link': self.summary_tree.insert("", tk.END, iid="cat_oa_no_link", text="🔑 OA (No PDF/Download Failed)", open=True),
-            'paywalled': self.summary_tree.insert("", tk.END, iid="cat_paywalled", text="💰 Paywalled", open=True),
-            'unpaywall_data_unavailable': self.summary_tree.insert("", tk.END, iid="cat_unavailable", text="⚠️ Unpaywall/SS Data Failed", open=True),
-            'doi_not_found': self.summary_tree.insert("", tk.END, iid="cat_doi_not_found", text="❌ DOI Not Found", open=True)
+            'downloaded_pdf': self.create_category_item("✅ Downloaded PDFs"),
+            'open_access_no_pdf_link': self.create_category_item("🔑 OA (No PDF/Download Failed)"),
+            'paywalled': self.create_category_item("💰 Paywalled"),
+            'unpaywall_data_unavailable': self.create_category_item("⚠️ Unpaywall/SS Data Failed"),
+            'doi_not_found': self.create_category_item("❌ DOI Not Found")
         }
-        self.summary_tree.config(show="tree headings")
+        # Add categories to the tree
+        for item in self.tree_categories.values():
+            self.summary_tree.addTopLevelItem(item)
+            item.setExpanded(True) # Start expanded
 
+        # --- Log Area Frame (Bottom pane of Splitter) ---
+        log_widget = QWidget()
+        log_layout = QVBoxLayout(log_widget)
+        log_layout.setContentsMargins(0, 0, 0, 0)
 
-        # --- Log Area Frame (Bottom pane of PanedWindow) ---
-        log_frame = tk.Frame(self.paned_window, relief=tk.GROOVE, borderwidth=2)
-        self.paned_window.add(log_frame, height=200) 
+        log_label = QLabel("Detailed Log:", self)
+        log_label.setObjectName("SectionHeader")
+        log_layout.addWidget(log_label)
+        self.log_text_area = QTextEdit(self)
+        self.log_text_area.setReadOnly(True)
+        log_layout.addWidget(self.log_text_area)
+        self.splitter.addWidget(log_widget)
 
-        log_label = tk.Label(log_frame, text="Detailed Log:", font=("Arial", 10, "bold"))
-        log_label.pack(pady=(5,0), anchor='w', padx=5)
-        self.log_text_area = scrolledtext.ScrolledText(log_frame, wrap=tk.WORD, height=10)
-        self.log_text_area.pack(pady=5, padx=5, fill=tk.BOTH, expand=True)
-        self.log_text_area.configure(state='disabled')
+        # Set initial splitter sizes (ratio)
+        self.splitter.setSizes([3, 2]) # Sets initial ratio to 60/40
 
-        self.check_gui_queue()
+        # Initial GUI state update
+        self.update_stay_on_top()
+        self.update_paths_labels()
+
+    def create_category_item(self, text):
+        """Helper to create QTreeWidget top-level items for categories."""
+        item = QTreeWidgetItem([text, "", ""]) # Category items have no DOI/URL, only text
+        item.setFlags(item.flags() & ~Qt.ItemIsSelectable) # Make categories non-selectable
+        return item
+
+    def update_paths_labels(self):
+        self.input_file_label.setText(os.path.basename(self.input_file_path) if self.input_file_path else "No file selected.")
+        self.output_folder_label.setText(os.path.basename(self.output_folder_path) if self.output_folder_path else "No folder selected.")
+
 
     def select_input_file(self):
-        path = filedialog.askopenfilename(
-            title="Select the .txt file with references",
-            filetypes=(("Text files", "*.txt"), ("All files", "*.*")),
-            initialdir=os.getcwd()
-        )
-        if path:
-            self.input_file_path.set(os.path.normpath(path))
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Select the .txt file with references", "",
+            "Text files (*.txt);;All files (*.*)")
+        if file_path:
+            self.input_file_path = os.path.normpath(file_path)
+            self.update_paths_labels()
 
     def select_output_folder(self):
-        path = filedialog.askdirectory(
-            title="Select Folder to Save Downloaded PDFs",
-            initialdir=os.getcwd()
-        )
-        if path:
-            self.output_folder_path.set(os.path.normpath(path))
+        folder_path = QFileDialog.getExistingDirectory(
+            self, "Select Folder to Save Downloaded PDFs", "")
+        if folder_path:
+            self.output_folder_path = os.path.normpath(folder_path)
+            self.update_paths_labels()
+
+    def process_gui_queue_item(self, queued_item):
+        """Processes a single item from the GUI update queue."""
+        if isinstance(queued_item, dict) and 'type' in queued_item:
+            if queued_item['type'] == 'log':
+                self.update_log_area(queued_item['message'])
+            elif queued_item['type'] == 'summary_add':
+                self.update_summary_treeview(queued_item['category_key'], queued_item['item_data'])
+        else:
+            self.update_log_area(str(queued_item))
 
     def update_log_area(self, message):
-        self.log_text_area.configure(state='normal')
-        self.log_text_area.insert(tk.END, message + "\n")
-        self.log_text_area.see(tk.END) 
-        self.log_text_area.configure(state='disabled')
+        self.log_text_area.insertPlainText(message + "\n")
+        self.log_text_area.verticalScrollBar().setValue(self.log_text_area.verticalScrollBar().maximum())
 
     def update_summary_treeview(self, category_key, item_data):
-        parent_iid = self.tree_categories.get(category_key)
-        if parent_iid:
+        parent_item = self.tree_categories.get(category_key)
+        if parent_item:
             doi_val = item_data.get('doi', 'N/A')
             title_val = item_data.get('title', 'No Title')
             status_info_val = item_data.get('status_info', 'N/A')
             url_val = item_data.get('url_info', 'N/A')
             
-            # Combine title and status for the second column for better readability
-            title_status_combined = f"{title_val[:60]}{'...' if len(title_val) > 60 else ''} -- {status_info_val}"
+            # Combine title and status for the second column
+            title_status_combined = f"{title_val} -- {status_info_val}"
 
-            # Insert item: text is usually for the first "tree" column if not using 'headings' show option only.
-            # Since we use 'headings', the first defined column by 'columns=' is #0.
-            # However, Treeview with 'show="tree headings"' expects 'text' for the first column of an item.
-            # Let's make the item's 'text' the DOI, and 'values' for the defined columns.
-            # Our columns are "DOI", "TitleInfo", "URL".
-            # So 'text' will be the primary identifier (like a short title or DOI for the item itself in tree column)
-            # and 'values' will be for the columns DOI, TitleInfo, URL.
-            # Let's adjust Treeview insertion: use item's title as 'text' in the tree.
-            
-            # Current setup: `columns=("DOI", "TitleInfo", "URL")`, `show="headings"` for tree.
-            # And categories are inserted with `text="Category Name"`.
-            # Child items are inserted with `text=doi_val, values=(doi_val, title_status_combined, url_val)`.
-            # This means the first column (#0 or 'tree' column) for the child will show `doi_val`.
-            # And then the `values` tuple maps to the columns "DOI", "TitleInfo", "URL".
-            # This is slightly redundant having DOI twice. Let's fix for clarity.
+            item = QTreeWidgetItem([doi_val, title_status_combined, url_val])
+            parent_item.addChild(item)
+            self.summary_tree.scrollToItem(item)
 
-            # New approach:
-            # 'text' for item can be a short version of title.
-            # 'values' for columns: DOI, Status, URL
-            item_text_display = (title_val[:40] + '...') if len(title_val) > 40 else title_val
-
-            # Values for the columns as defined: "DOI", "TitleInfo", "URL"
-            # The 'TitleInfo' column will now hold the status. The title is in the tree's item text.
-            tree_values = (
-                doi_val,
-                status_info_val, # This is now the 'Status / File / Note'
-                url_val
-            )
-
-            new_item_id = self.summary_tree.insert(parent_iid, tk.END, text=item_text_display, values=tree_values)
-            self.summary_tree.see(new_item_id)
-
-    def check_gui_queue(self):
-        try:
-            while True:
-                queued_item = self.gui_update_queue.get_nowait()
-                if isinstance(queued_item, dict) and 'type' in queued_item:
-                    if queued_item['type'] == 'log':
-                        self.update_log_area(queued_item['message'])
-                    elif queued_item['type'] == 'summary_add':
-                        self.update_summary_treeview(queued_item['category_key'], queued_item['item_data'])
-                else:
-                    self.update_log_area(str(queued_item))
-        except queue.Empty:
-            pass
-        self.root.after(100, self.check_gui_queue)
 
     def gui_update_callback(self, item_to_log):
-        self.gui_update_queue.put(item_to_log)
+        # Emit the signal to process the item on the main GUI thread
+        self.gui_update_signal.emit(item_to_log)
 
-    def start_processing_thread(self):
-        input_file = self.input_file_path.get()
-        output_folder = self.output_folder_path.get()
-
-        if not input_file:
-            messagebox.showerror("Error", "Please select an input file.")
+    def start_file_processing(self):
+        """Starts processing using the selected input file."""
+        if not self.input_file_path:
+            QMessageBox.warning(self, "Error", "Please select an input file.")
             return
-        if not output_folder:
-            messagebox.showerror("Error", "Please select an output folder.")
+        
+        try:
+            with open(self.input_file_path, 'r', encoding='utf-8') as f:
+                references_from_file = [line.strip() for line in f if line.strip()]
+            
+            if not references_from_file:
+                QMessageBox.warning(self, "Warning", f"No references found in '{os.path.basename(self.input_file_path)}' or the file is empty.")
+                return
+
+            self._initiate_processing(references_from_file)
+
+        except FileNotFoundError:
+            QMessageBox.critical(self, "Error", f"Input file '{os.path.basename(self.input_file_path)}' not found.")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Error reading input file: {str(e)}")
+
+
+    def start_clipboard_processing(self):
+        """Starts processing using content from the clipboard."""
+        clipboard_text = QApplication.clipboard().text()
+        if not clipboard_text:
+            QMessageBox.warning(self, "Warning", "Clipboard is empty. Please copy references to the clipboard first.")
+            return
+
+        references_from_clipboard = [line.strip() for line in clipboard_text.splitlines() if line.strip()]
+
+        if not references_from_clipboard:
+            QMessageBox.warning(self, "Warning", "No valid references found in clipboard content.")
+            return
+
+        self._initiate_processing(references_from_clipboard)
+
+
+    def _initiate_processing(self, references_list):
+        """Common logic to start the background processing thread."""
+        if not self.output_folder_path:
+            QMessageBox.warning(self, "Error", "Please select an output folder.")
             return
         
         if UNPAYWALL_EMAIL == 'YOUR_EMAIL@example.com' or not UNPAYWALL_EMAIL:
-             messagebox.showerror("Error", "Please set your Unpaywall email at the top of the script (UNPAYWALL_EMAIL variable).")
+             QMessageBox.critical(self, "Error", "Please set your Unpaywall email in 'macros/RefFinder.py' (UNPAYWALL_EMAIL variable).")
              return
 
-        for category_iid_key in self.tree_categories: # Use the key to get iid
-            parent_iid = self.tree_categories[category_iid_key]
-            for item_iid in self.summary_tree.get_children(parent_iid):
-                self.summary_tree.delete(item_iid)
+        # Clear previous summary
+        for category_item in self.tree_categories.values():
+            category_item.takeChildren()
         
-        self.log_text_area.configure(state='normal')
-        self.log_text_area.delete(1.0, tk.END)
-        self.log_text_area.configure(state='disabled')
+        self.log_text_area.clear()
         
         self.gui_update_callback({'type': 'log', 'message': "Starting processing..."})
         
-        self.start_button.config(text="Processing...", state=tk.DISABLED)
-        self.copy_summary_button.config(state=tk.DISABLED) # Disable copy button during processing
+        # Disable both processing buttons
+        self.start_file_processing_button.setText("Processing...")
+        self.start_file_processing_button.setEnabled(False)
+        self.process_from_clipboard_button.setEnabled(False)
+        self.copy_summary_button.setEnabled(False)
 
         self.processing_thread = threading.Thread(
             target=self.run_backend_task,
-            args=(input_file, output_folder),
+            args=(references_list, self.output_folder_path),
             daemon=True
         )
         self.processing_thread.start()
 
-    def run_backend_task(self, input_file, output_folder):
+    def run_backend_task(self, references_list, output_folder):
+        """The actual background task that calls the macro."""
         try:
-            references_from_file = []
-            with open(input_file, 'r', encoding='utf-8') as f:
-                references_from_file = [line.strip() for line in f if line.strip()]
-            
-            if not references_from_file:
-                self.gui_update_callback({'type': 'log', 'message': f"No references found in '{input_file}' or the file is empty."})
-                # self.processing_finished() # This will be called in finally
-                return
+            process_references_backend(references_list, output_folder, self.gui_update_callback)
 
-            process_references_backend(references_from_file, output_folder, self.gui_update_callback)
-
-        except FileNotFoundError:
-            self.gui_update_callback({'type': 'log', 'message': f"🚨 Error: Input file '{input_file}' not found."})
         except Exception as e:
             self.gui_update_callback({'type': 'log', 'message': f"🚨 An unexpected error occurred in backend processing: {e}"})
-            import traceback
-            self.gui_update_callback({'type': 'log', 'message': traceback.format_exc()})
+            self.gui_update_callback({'type': 'log', 'message': traceback.format_exc()}) # Log full traceback
         finally:
             self.processing_finished()
             
     def processing_finished(self):
-        self.root.after(0, lambda: self.start_button.config(text="Start Processing", state=tk.NORMAL))
-        self.root.after(0, lambda: self.copy_summary_button.config(state=tk.NORMAL)) # Re-enable copy button
+        # Use QTimer.singleShot(0, ...) to ensure these GUI updates happen on the main thread
+        QTimer.singleShot(0, lambda: self.start_file_processing_button.setText("Start Processing (File)"))
+        QTimer.singleShot(0, lambda: self.start_file_processing_button.setEnabled(True))
+        QTimer.singleShot(0, lambda: self.process_from_clipboard_button.setEnabled(True))
+        QTimer.singleShot(0, lambda: self.copy_summary_button.setEnabled(True))
         self.gui_update_callback({'type': 'log', 'message': "\n--- All Processing Finished. Check summary above. ---"})
 
-    # --- NEW METHOD TO COPY SUMMARY ---
     def copy_summary_to_clipboard(self):
         summary_lines = []
         try:
-            for category_key, parent_iid in self.tree_categories.items():
-                category_text = self.summary_tree.item(parent_iid, 'text')
+            for category_key, parent_item in self.tree_categories.items():
+                category_text = parent_item.text(0) # Get text from the first column of the parent item
                 summary_lines.append(f"\n{category_text}")
                 
-                children = self.summary_tree.get_children(parent_iid)
-                if not children:
+                children_count = parent_item.childCount()
+                if children_count == 0:
                     summary_lines.append("\t(No items in this category)")
                     continue
 
-                for child_iid in children:
-                    item_text = self.summary_tree.item(child_iid, 'text') # This is the short title
-                    item_values = self.summary_tree.item(child_iid, 'values') # (DOI, StatusInfo, URL)
-                    
-                    # Ensure item_values is a list/tuple and has enough elements
-                    doi_val = item_values[0] if len(item_values) > 0 else "N/A"
-                    status_info_val = item_values[1] if len(item_values) > 1 else "N/A"
-                    url_val = item_values[2] if len(item_values) > 2 else "N/A"
+                for i in range(children_count):
+                    child_item = parent_item.child(i)
+                    item_text_display = child_item.text(1) # This is the "Title / Status / File" combined column
+                    doi_val = child_item.text(0) # DOI is in the first column
+                    url_val = child_item.text(2) # URL is in the third column
 
-                    summary_lines.append(f"\t- Title: {item_text}")
-                    summary_lines.append(f"\t  DOI: {doi_val}")
-                    summary_lines.append(f"\t  Status/Note: {status_info_val}")
+                    summary_lines.append(f"\t- {item_text_display}")
+                    if doi_val != 'N/A':
+                        summary_lines.append(f"\t  DOI: {doi_val}")
                     summary_lines.append(f"\t  URL: {url_val}")
             
             clipboard_text = "\n".join(summary_lines)
@@ -267,12 +370,42 @@ class App:
                 self.gui_update_callback({'type': 'log', 'message': "Summary is empty. Nothing to copy."})
                 return
 
-            self.root.clipboard_clear()
-            self.root.clipboard_append(clipboard_text)
-            self.root.update() # To make it available to other apps immediately
+            QApplication.clipboard().setText(clipboard_text)
             self.gui_update_callback({'type': 'log', 'message': "Summary copied to clipboard!"})
-            messagebox.showinfo("Copied", "Summary copied to clipboard!")
+            QMessageBox.information(self, "Copied", "Summary copied to clipboard!")
 
         except Exception as e:
             self.gui_update_callback({'type': 'log', 'message': f"Error copying summary: {e}"})
-            messagebox.showerror("Error", f"Could not copy summary to clipboard: {e}")
+            QMessageBox.critical(self, "Error", f"Could not copy summary to clipboard: {e}")
+
+    def update_stay_on_top(self):
+        # This method assumes the parent of this window is the MainWindow
+        # which has the stay_on_top_checkbox.
+        parent = self.parent()
+        if parent and hasattr(parent, 'stay_on_top_checkbox'):
+             main_win = parent # In this case, parent is MainWindow
+             flags = self.windowFlags()
+             if main_win.stay_on_top_checkbox.isChecked():
+                self.setWindowFlags(flags | Qt.WindowStaysOnTopHint)
+             else:
+                self.setWindowFlags(flags & ~Qt.WindowStaysOnTopHint)
+             self.show()
+
+# You can uncomment and run this block for standalone testing of the RefFinderWindow
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#
+#     # Mock parent for stay_on_top checkbox (replace with your actual MainWindow setup if testing)
+#     main_window_mock = QMainWindow()
+#     main_window_mock.stay_on_top_checkbox = QCheckBox("Stay on Top", main_window_mock)
+#     main_window_mock.stay_on_top_checkbox.setChecked(False)
+#     main_window_mock.show()
+#
+#     # Ensure 'clipboard.ico' exists in 'ui' directory for local testing
+#     # Or comment out the icon part if you don't have it
+#     # Example if you don't have clipboard.ico:
+#     # self.process_from_clipboard_button = QPushButton("Process from Clipboard", self)
+#
+#     ref_finder_win = RefFinderWindow(main_window_mock)
+#     ref_finder_win.show()
+#     sys.exit(app.exec_())

@@ -3,8 +3,6 @@ import json
 import time
 import os
 import re
-import tkinter as tk
-
 
 # --- Configuration (Kept for backend, email is important) ---
 UNPAYWALL_EMAIL = 'jaustind1@gmail.com' # User's email
@@ -293,8 +291,3 @@ def process_references_backend(reference_list, chosen_download_folder, gui_updat
             
     gui_update_callback({'type': 'log', 'message': "\n--- Processing Complete ---"}) 
 
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = App(root)
-    root.mainloop()
