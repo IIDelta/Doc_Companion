@@ -78,3 +78,32 @@ Doc\_Companion offers several tools to enhance your document workflow:
 * **User Acronyms:** A `user_acronyms.txt` file is automatically created in `C:\Users\<YourUsername>\.doc_companion\`. You can manually edit this file (using Tab as a separator) or let the Acronyms window update it when you edit definitions.
 * **Base Acronyms:** A base list is fetched from GitHub and cached locally.
 * **Include/Exclude Lists (Advanced):** You can create `user_exclude.txt` and `user_include.txt` files in the `C:\Users\<YourUsername>\.doc_companion\` directory to force certain words to be ignored or always considered (even if not following standard patterns). Add one word/phrase per line.
+
+### Prepare PleaseReview Copy
+
+Creates a safe review copy of a Word document containing tracked changes.
+
+- The source document is never modified.
+- Text insertions are accepted and highlighted yellow.
+- Text deletions are rejected, restoring the deleted text, then marked using the
+  `DC PleaseReview Deleted Text` custom character style.
+- By default, restored deletions appear as red strikethrough text.
+- Optional: restored deletions can also receive yellow highlight.
+- Headers, footers, footnotes, endnotes, text boxes, and other accessible Word
+  story ranges are processed where revisions are available.
+- Unsupported revision types are retained and listed in an adjacent JSON audit log.
+- Processing can be cancelled safely between revisions.
+- A partial output created after cancellation is clearly marked in the audit log.
+
+#### Removing redactions after review
+
+1. Open the prepared PleaseReview copy in Word.
+2. Press `Ctrl+H`.
+3. Select **More**.
+4. Choose **Format** → **Style**.
+5. Select `DC PleaseReview Deleted Text`.
+6. Leave **Replace with** blank.
+7. Use **Replace All** only after final review and approval.
+
+> Always retain the original tracked-changes protocol and the generated audit JSON
+> until the review process is complete.
