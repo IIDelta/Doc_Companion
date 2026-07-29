@@ -34,6 +34,9 @@ try:
 except ImportError:
     process_word_document = None
 
+from .windowchrome import applydarktitlebar
+
+
 
 class MainWindow(QMainWindow):
     """Primary Doc Companion tool-selection window."""
@@ -47,6 +50,7 @@ class MainWindow(QMainWindow):
         self.replace_values_window = None
         self.ref_finder_window = None
         self.please_review_window = None
+        self.referencecheckwindow = None
 
         self.setWindowTitle("Doc Companion")
         self.setFixedSize(460, 330)
@@ -140,6 +144,15 @@ class MainWindow(QMainWindow):
         )
         layout.addWidget(please_review_button)
 
+        self.referencecheckbutton = QPushButton(
+            " Reference Library Check", self
+        )
+        self.referencecheckbutton.clicked.connect(
+            self.openreferencecheckwindow
+        )
+        layout.addWidget(self.referencecheckbutton)
+
+
         layout.addStretch()
 
         self.label = QLabel("", self)
@@ -180,6 +193,8 @@ class MainWindow(QMainWindow):
 
         self.replace_values_window = ReplaceValuesSelectionWindow(self)
         self.replace_values_window.show()
+        applydarktitlebar(self.referencecheckwindow)
+
 
     def open_acronyms_window(self) -> None:
         """Open the Acronyms Table tool window."""
@@ -195,6 +210,8 @@ class MainWindow(QMainWindow):
 
         self.acronyms_window = AcronymsWindow(self)
         self.acronyms_window.show()
+        applydarktitlebar(self.referencecheckwindow)
+
 
     def open_ref_finder_window(self) -> None:
         """Open the Reference/Open-Access Finder window."""
@@ -210,6 +227,7 @@ class MainWindow(QMainWindow):
 
         self.ref_finder_window = RefFinderWindow(self)
         self.ref_finder_window.show()
+        applydarktitlebar(self.referencecheckwindow)
 
     def open_please_review_window(self) -> None:
         """Open the tracked-changes PleaseReview preparation window."""
@@ -225,6 +243,7 @@ class MainWindow(QMainWindow):
 
         self.please_review_window = PleaseReviewWindow(self)
         self.please_review_window.show()
+        applydarktitlebar(self.referencecheckwindow)
 
     def run_clean_document(self) -> None:
         """Run the existing Clean & Protect workflow."""
@@ -311,6 +330,17 @@ class MainWindow(QMainWindow):
             daemon=True,
         )
         thread.start()
+
+    def openreferencecheckwindow(self):
+        from .referencecheckwindow import ReferenceCheckWindow
+        if (self.referencecheckwindow is not None and
+                self.referencecheckwindow.isVisible()):
+            self.referencecheckwindow.activateWindow()
+            self.referencecheckwindow.raise_()
+        else:
+            self.referencecheckwindow = ReferenceCheckWindow(self)
+            self.referencecheckwindow.show()
+            applydarktitlebar(self.referencecheckwindow)
 
     @staticmethod
     def _prefetch_acronyms_worker() -> None:

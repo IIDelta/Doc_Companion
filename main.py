@@ -13,6 +13,7 @@ from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication
 
 from ui.mainwindow import MainWindow
+from ui.windowchrome import applydarktitlebar
 
 
 def get_resource_path(relative_path: str) -> str:
@@ -59,6 +60,8 @@ def main() -> None:
 
     main_window = MainWindow()
     main_window.show()
+    QTimer.singleShot(0, lambda: applydarktitlebar(main_window))
+
 
     QTimer.singleShot(0, main_window.prefetch_acronyms)
 
