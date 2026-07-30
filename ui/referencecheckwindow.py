@@ -1,8 +1,21 @@
-"""PyQt action queue for reference reconciliation and Style Guide citations."""
+"""PyQt action queue for reference reconciliation and Style Guide citations.
+
+This UI works with the existing macros.referencecheck.py module.
+
+It adds:
+- Preview Replacement
+- Replace Selected Text
+- Safe direct replacement of Style Guide inline citations
+- Safe insertion of temporary EndNote citations using author, year, and title
+"""
+
 from __future__ import annotations
 
 from pathlib import Path
+import re
 import traceback
+
+import win32com.client
 
 from PyQt5.QtCore import (
     QObject,
@@ -226,6 +239,34 @@ class ReferenceCheckWindow(QMainWindow):
             self.copycontext
         )
 
+        self.previewreplacebutton = QPushButton(
+            "Preview Replacement"
+        )
+
+        self.previewreplacebutton.setObjectName(
+            "UtilityButton"
+        )
+
+        self.previewreplacebutton.setEnabled(False)
+
+        self.previewreplacebutton.clicked.connect(
+            self.previewreplacement
+        )
+
+        self.replaceselectedbutton = QPushButton(
+            "Replace Selected Text"
+        )
+
+        self.replaceselectedbutton.setObjectName(
+            "PrimaryButton"
+        )
+
+        self.replaceselectedbutton.setEnabled(False)
+
+        self.replaceselectedbutton.clicked.connect(
+            self.replaceselectedtext
+        )
+
         self.emailbutton = QPushButton(
             "Prepare Request Email"
         )
@@ -256,6 +297,8 @@ class ReferenceCheckWindow(QMainWindow):
             self.endnotebutton,
             self.inlinebutton,
             self.contextbutton,
+            self.previewreplacebutton,
+            self.replaceselectedbutton,
             self.emailbutton,
         ):
             controls.addWidget(button)
@@ -286,13 +329,17 @@ class ReferenceCheckWindow(QMainWindow):
         self.tabs = QTabWidget()
 
         self.endnotetable = self.createactiontable()
+
         self.requesttable = self.createactiontable()
+
         self.inlinetable = self.createtable(
             self.inlineheaders
         )
+
         self.existingtable = self.createtable(
             self.simpleheaders
         )
+
         self.warningtable = self.createtable(
             self.simpleheaders
         )
@@ -477,6 +524,8 @@ class ReferenceCheckWindow(QMainWindow):
             self.endnotebutton,
             self.inlinebutton,
             self.contextbutton,
+            self.previewreplacebutton,
+            self.replaceselectedbutton,
             self.emailbutton,
             self.exportbutton,
         ):
@@ -698,6 +747,20 @@ class ReferenceCheckWindow(QMainWindow):
             )
         )
 
+        self.previewreplacebutton.setEnabled(
+            bool(
+                endnoteitems
+                or result.inlineonly
+            )
+        )
+
+        self.replaceselectedbutton.setEnabled(
+            bool(
+                endnoteitems
+                or result.inlineonly
+            )
+        )
+
         self.emailbutton.setEnabled(
             bool(requestitems)
         )
@@ -904,7 +967,7 @@ class ReferenceCheckWindow(QMainWindow):
                         "",
                         (
                             "Best library candidate "
-                            f"({data.score:.1%}):"
+                            f"({data.score:.0%}):"
                         ),
                         data.bestmatch.raw,
                         "",
@@ -914,17 +977,21 @@ class ReferenceCheckWindow(QMainWindow):
                 )
 
             if data.candidates:
-                lines.append("\nRanked candidates:")
+                lines.append(
+                    "\nRanked candidates:"
+                )
 
                 for number, candidate in enumerate(
                     data.candidates,
                     start=1,
                 ):
                     lines.append(
-                        f"{number}. "
-                        f"{candidate.score:.1%} — "
-                        f"{candidate.record.label()} "
-                        f"[{candidate.reason}]"
+                        (
+                            f"{number}. "
+                            f"{candidate.score:.0%} — "
+                            f"{candidate.record.label()} "
+                            f"[{candidate.reason}]"
+                        )
                     )
 
             self.detail.setPlainText(
@@ -1051,6 +1118,244 @@ class ReferenceCheckWindow(QMainWindow):
         self.statuslabel.setText(
             "Context copied to the clipboard."
         )
+
+    def selectedreplacement(self):
+        data = self.selecteddata()
+
+        if isinstance(data, InlineSuggestion):
+            if "[" in data.suggestion or "]" in data.suggestion:
+                raise ValueError(
+                    "The inline citation still has placeholders. "
+                    "Complete the webpage title, access date, "
+                    "document title, or year before replacement."
+                )
+
+            return (
+                data.suggestion,
+                "inline",
+                (
+                    "The selected plain text will be replaced "
+                    "with the approved Style Guide inline citation."
+                ),
+            )
+
+        if isinstance(data, Finding):
+            if not data.bestmatch:
+                raise ValueError(
+                    "The selected result has no shared-library "
+                    "candidate."
+                )
+
+            record = data.bestmatch
+
+            if not record.firstauthor:
+                raise ValueError(
+                    "The library record is missing first-author "
+                    "metadata."
+                )
+
+            if not record.year:
+                raise ValueError(
+                    "The library record is missing year metadata."
+                )
+
+            if not record.title:
+                raise ValueError(
+                    "The library record is missing title metadata."
+                )
+
+            safe_title = re.sub(
+                r"[{},]",
+                " ",
+                record.title,
+            )
+
+            safe_title = re.sub(
+                r"\s+",
+                " ",
+                safe_title,
+            ).strip()
+
+            replacement = (
+                f"{{{record.firstauthor}, "
+                f"{record.year}, "
+                f"{safe_title}}}"
+            )
+
+            return (
+                replacement,
+                "endnote",
+                (
+                    "The selected plain text will be replaced "
+                    "with a temporary EndNote citation. "
+                    "Then run EndNote → Update Citations and Bibliography."
+                ),
+            )
+
+        raise ValueError(
+            "Select either a library match or a Style Guide "
+            "Inline Source first."
+        )
+
+    def getwordselection(self):
+        try:
+            word = win32com.client.GetActiveObject(
+                "Word.Application"
+            )
+
+            selection = word.Selection
+
+            selectedtext = (
+                selection.Text
+                .replace("\r", "")
+                .replace("\x07", "")
+                .strip()
+            )
+
+            if not selectedtext:
+                raise ValueError(
+                    "No text is selected in Word. Select the "
+                    "incorrect citation text, then return here."
+                )
+
+            try:
+                fieldcount = selection.Fields.Count
+            except Exception:
+                fieldcount = 0
+
+            if fieldcount:
+                raise ValueError(
+                    "The selected text contains a Word or EndNote "
+                    "field. Do not replace existing EndNote citations "
+                    "through this tool. Use EndNote Edit & Manage "
+                    "Citation(s) instead."
+                )
+
+            return word, selection, selectedtext
+
+        except ValueError:
+            raise
+
+        except Exception as exc:
+            raise ValueError(
+                "Could not access the active Word selection: "
+                f"{exc}"
+            )
+
+    def previewreplacement(self):
+        try:
+            replacement, _, explanation = (
+                self.selectedreplacement()
+            )
+
+            _, _, selectedtext = self.getwordselection()
+
+            QMessageBox.information(
+                self,
+                "Replacement Preview",
+                (
+                    "Current Word selection:\n\n"
+                    f"{selectedtext}\n\n"
+                    "Replacement:\n\n"
+                    f"{replacement}\n\n"
+                    "Action:\n"
+                    f"{explanation}"
+                ),
+            )
+
+        except ValueError as exc:
+            QMessageBox.warning(
+                self,
+                "Replacement Not Available",
+                str(exc),
+            )
+
+    def replaceselectedtext(self):
+        try:
+            replacement, replacementtype, explanation = (
+                self.selectedreplacement()
+            )
+
+            word, selection, selectedtext = (
+                self.getwordselection()
+            )
+
+            document = word.ActiveDocument
+
+            try:
+                trackchanges = bool(
+                    document.TrackRevisions
+                )
+            except Exception:
+                trackchanges = False
+
+            trackwarning = ""
+
+            if not trackchanges:
+                trackwarning = (
+                    "\n\nWarning: Track Changes is OFF. "
+                    "The replacement may not be reviewable "
+                    "as a tracked edit."
+                )
+
+            answer = QMessageBox.question(
+                self,
+                "Confirm Replacement",
+                (
+                    "Replace selected Word text?\n\n"
+                    "Current:\n"
+                    f"{selectedtext}\n\n"
+                    "Replacement:\n"
+                    f"{replacement}\n\n"
+                    f"{explanation}"
+                    f"{trackwarning}"
+                ),
+                QMessageBox.Yes | QMessageBox.No,
+                QMessageBox.No,
+            )
+
+            if answer != QMessageBox.Yes:
+                return
+
+            selection.Text = replacement
+
+            if replacementtype == "endnote":
+                QMessageBox.information(
+                    self,
+                    "Temporary EndNote Citation Inserted",
+                    (
+                        "A temporary EndNote citation was inserted.\n\n"
+                        "In Word, use:\n\n"
+                        "EndNote → Update Citations and Bibliography\n\n"
+                        "EndNote should convert the temporary citation "
+                        "to a formatted EndNote citation and update "
+                        "the bibliography."
+                    ),
+                )
+
+            else:
+                QMessageBox.information(
+                    self,
+                    "Inline Citation Inserted",
+                    (
+                        "The selected Word text was replaced with "
+                        "the Style Guide inline citation."
+                    ),
+                )
+
+        except ValueError as exc:
+            QMessageBox.warning(
+                self,
+                "Replacement Not Available",
+                str(exc),
+            )
+
+        except Exception as exc:
+            QMessageBox.critical(
+                self,
+                "Replacement Failed",
+                str(exc),
+            )
 
     def prepareemail(self):
         if not self.result:

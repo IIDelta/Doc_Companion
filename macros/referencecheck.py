@@ -65,6 +65,11 @@ AUTHOR_YEAR_NARRATIVE_PATTERN = re.compile(
     r")\s*\(((?:18|19|20)\d{2})\)"
 )
 
+ENDNOTEID_PATTERN = re.compile(
+    r"\[\[ENDNOTEID:(\d+)\]\]",
+    re.I,
+)
+
 REFERENCE_HEADINGS = {
     "references",
     "reference list",
@@ -159,6 +164,8 @@ class Record:
     itemtype: str = ""
     url: str = ""
     accessed: str = ""
+    endnoteid: str = ""
+
 
     def label(self) -> str:
         author = self.firstauthor or "Unknown author"
@@ -191,6 +198,9 @@ class Record:
 
         if self.journal:
             lines.append(f"Journal: {self.journal}")
+
+        if self.endnoteid:
+            lines.append(f"EndNote Record Number: {self.endnoteid}")
 
         return "\n".join(lines) or self.raw
 
@@ -574,10 +584,22 @@ def parsereference(
     context: str = "",
     kind: str = "reference",
 ) -> Record:
+    endnoteid_match = ENDNOTEID_PATTERN.search(raw)
+    endnoteid = (
+        endnoteid_match.group(1)
+        if endnoteid_match
+        else ""
+    )
+
+    raw_without_id = ENDNOTEID_PATTERN.sub(
+        "",
+        raw,
+    )
+
     cleaned = re.sub(
         r"\s+",
         " ",
-        raw,
+        raw_without_id,
     ).strip()
 
     numbered = NUMBERED_REFERENCE_PATTERN.match(
@@ -589,7 +611,6 @@ def parsereference(
             referencenumber
             or numbered.group(1)
         )
-
         cleaned = numbered.group(2)
 
     doi = normalizeddoi(cleaned)
@@ -726,7 +747,7 @@ def parsereference(
         title = cleaned
 
     return Record(
-        raw=raw.strip(),
+        raw=raw_without_id.strip(),
         source=source,
         title=title,
         firstauthor=author,
@@ -740,6 +761,7 @@ def parsereference(
         referenceblock=referenceblock,
         referencenumber=referencenumber,
         kind=kind,
+        endnoteid=endnoteid,
     )
 
 

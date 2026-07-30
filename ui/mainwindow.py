@@ -51,6 +51,8 @@ class MainWindow(QMainWindow):
         self.ref_finder_window = None
         self.please_review_window = None
         self.referencecheckwindow = None
+        self.citation_migration_window = None
+
 
         self.setWindowTitle("Doc Companion")
         self.setFixedSize(460, 330)
@@ -151,6 +153,21 @@ class MainWindow(QMainWindow):
             self.openreferencecheckwindow
         )
         layout.addWidget(self.referencecheckbutton)
+        citation_migration_button = QPushButton(
+            " Citation Migration",
+            self,
+        )
+
+        citation_migration_button.setObjectName(
+            "UtilityButton"
+        )
+
+        citation_migration_button.clicked.connect(
+            self.open_citation_migration_window
+        )
+
+        layout.addWidget(citation_migration_button)
+
 
 
         layout.addStretch()
@@ -321,6 +338,21 @@ class MainWindow(QMainWindow):
             ):
                 child_window.update_stay_on_top()
 
+        if (
+            self.citation_migration_window is not None
+            and self.citation_migration_window.isVisible()
+        ):
+            self.citation_migration_window.setWindowFlags(
+                self.citation_migration_window.windowFlags()
+                | Qt.WindowStaysOnTopHint
+                if checked
+                else self.citation_migration_window.windowFlags()
+                & ~Qt.WindowStaysOnTopHint
+            )
+
+            self.citation_migration_window.show()
+
+
     def prefetch_acronyms(self) -> None:
         """
         Download/cache the base acronym list without blocking initial UI display.
@@ -341,6 +373,26 @@ class MainWindow(QMainWindow):
             self.referencecheckwindow = ReferenceCheckWindow(self)
             self.referencecheckwindow.show()
             applydarktitlebar(self.referencecheckwindow)
+
+    def open_citation_migration_window(self):
+        from .citationmigrationwindow import (
+            CitationMigrationWindow,
+        )
+
+        if (
+            self.citation_migration_window is not None
+            and self.citation_migration_window.isVisible()
+        ):
+            self.citation_migration_window.activateWindow()
+            self.citation_migration_window.raise_()
+
+        else:
+            self.citation_migration_window = (
+                CitationMigrationWindow(self)
+            )
+
+            self.citation_migration_window.show()
+
 
     @staticmethod
     def _prefetch_acronyms_worker() -> None:
