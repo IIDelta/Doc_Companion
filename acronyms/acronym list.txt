@@ -70,7 +70,7 @@ LS means	least squares means
 MCH	mean corpuscular hemoglobin
 MCHC	mean corpuscular hemoglobin concentration
 MCV	mean corpuscular volume
-MedDRA	Medical Dictionary for Regulatory Activities
+MedDRA	Medical Dictionary for Regulatory Activities Terminology
 mg	milligram
 mL	milliliters
 MPV	mean platelet volume
@@ -83,12 +83,12 @@ P2	placebo #2
 P3	placebo #3
 PD	protocol deviation
 PI	principal investigator
-PK	pharmacokinetic
+PK	pharmacokinetic(s)
 PKMD	pharmacokinetic multiple-dose
 PKSD	pharmacokinetic single-dose
 PP	per protocol population
 PPS	per protocol set
-PT	preferred term
+PT	Preferred Term
 QA	quality assurance
 RBC	red blood cell count
 RDW	red cell distribution width
@@ -102,11 +102,11 @@ SD	standard deviation
 SEM	standard error of the mean
 SMO	site management organization
 SoA	schedule of activities
-SOC	system organ class
+SOC	System Organ Class
 SOWS	Subjective Opiate Withdrawal Scale
 SpO2	oxygen saturation
 T1/2	terminal half-life
-TEAE	treatment emergent adverse event
+TEAE	treatment-emergent adverse event
 Tlast	time of last measurable (positive) observed concentration
 Tlast-ss	time of last measurable (positive) observed concentration at steady state
 Tmax	time to reach Cmax
@@ -121,3 +121,26 @@ PM	project manager
 COVID-19	coronavirus disease of 2019
 ITT	intention-to-treat
 RP	reference product
+ADA	antidrug antibodies
+ADR	adverse drug reaction
+AESI	adverse event of special interest
+BW	body weight
+CIDP	chronic inflammatory demyelinating polyneuropathy
+CTCAE	Common Terminology Criteria for Adverse Events
+CVID	common variable immunodeficiency
+EEA	European Economic Area
+EOT	end of trial
+IG	immunoglobulin
+IgG	immunoglobulin G
+IGI, 10%	immune globulin infusion (human), 10%
+IGIV	intravenous immunoglobulin
+IGSC	subcutaneous immunoglobulin
+IGSC, 20%	subcutaneous immune globulin infusion (human), 20%
+ISS	integrated safety summary
+Max	maximum
+Min	minimum
+PIDD	primary immunodeficiency disease
+rHuPH20	recombinant human hyaluronidase PH20
+SAS	safety analysis set
+SC	subcutaneous(ly)
+TDL	target dose level
