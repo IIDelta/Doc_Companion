@@ -257,10 +257,20 @@ class AcronymsWindow(QMainWindow):
         table.resizeRowsToContents()  # Resize rows AFTER populating
 
     def generate_table(self):
-        self.save_user_definitions()
-        self.create_word_table()
+        included_rows = self.create_word_table()
+        if included_rows:
+            self.save_user_definitions(included_rows)
 
-    def save_user_definitions(self):
+    def save_user_definitions(self, included_rows):
+        """
+        Save definitions used in a generated table to the user list.
+
+        Only rows that were included in the table are considered, and only
+        definitions that are new or differ from what is already known (user
+        list first, then base list) are written. This captures definitions
+        typed into the Possible/Unlikely tabs without copying the whole base
+        list into the user file.
+        """
         user_definitions = {}
         try:
             with open(self.user_acronym_file_path, 'r', encoding='utf-8') as f:
@@ -278,21 +288,18 @@ class AcronymsWindow(QMainWindow):
             return
 
         made_changes = False
-        for table_widget in [self.likely_table,
-                             self.possible_table,
-                             self.unlikely_table]:
-            for r in range(table_widget.rowCount()):
-                acr_item = table_widget.item(r, 0)
-                defn_item = table_widget.item(r, 1)
-                if acr_item and defn_item:
-                    acr = acr_item.text().strip()
-                    defn = defn_item.text().strip()
-                    if (
-                            acr and defn and
-                            (acr not in user_definitions
-                             or user_definitions[acr] != defn)):
-                        user_definitions[acr] = defn
-                        made_changes = True
+        for acr, defn in included_rows:
+            if not acr or not defn:
+                continue
+            known = ""
+            if get_definition:
+                known = get_definition(
+                    acr,
+                    self.base_acronym_file_path or "",
+                    self.user_acronym_file_path).strip()
+            if defn != known:
+                user_definitions[acr] = defn
+                made_changes = True
 
         if made_changes:
             try:
@@ -307,10 +314,16 @@ class AcronymsWindow(QMainWindow):
                                      f"Failed to save user definitions: {e}")
 
     def create_word_table(self):
+        """
+        Build and save the Word table.
+
+        Returns the list of (acronym, definition) rows included in the table
+        (definitions as typed, may be empty), or None if cancelled or failed.
+        """
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Save Acronym Table", "", "Word Documents (*.docx)")
         if not file_path:
-            return
+            return None
 
         try:
             doc = Document()
@@ -330,25 +343,30 @@ class AcronymsWindow(QMainWindow):
                     checkbox = (cell_widget.findChild(QCheckBox)
                                 if cell_widget else None)
                     if checkbox and checkbox.isChecked():
-                        acr = table_widget.item(i, 0).text()
-                        defn = table_widget.item(i, 1).text() or "---"
-                        rows_to_add.append((acr, defn))
+                        acr_item = table_widget.item(i, 0)
+                        defn_item = table_widget.item(i, 1)
+                        acr = acr_item.text().strip() if acr_item else ""
+                        defn = defn_item.text().strip() if defn_item else ""
+                        if acr:
+                            rows_to_add.append((acr, defn))
 
             rows_to_add.sort(key=lambda x: x[0].upper())
 
             for acronym, definition in rows_to_add:
                 cells = table.add_row().cells
                 cells[0].text = acronym
-                cells[1].text = definition
+                cells[1].text = definition or "---"
 
             doc.save(file_path)
             QMessageBox.information(self, "Success",
                                     f"Table saved successfully to {file_path}")
+            return rows_to_add
 
         except Exception as e:
             QMessageBox.critical(self, "Error",
                                  f"Failed to generate Word table: {str(e)}")
             print(f"Error generating table: {e}")
+            return None
 
     def update_stay_on_top(self):
         parent = self.parent()

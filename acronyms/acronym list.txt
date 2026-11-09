@@ -1,131 +1,123 @@
-AE	Adverse Event
-ALP	Alkaline Phosphatase
-ALT	Alanine Aminotransferase
-ANCOVA	Analysis of Covariance
-AST	Aspartate Aminotransferase
-AUC	Area Under the Concentration-Time Curve
-AUC0-24	Area under the plasma concentration-time curve over 24 h following single dose administration
-AUC0-72	Area under the plasma concentration-time curve over 72 h following single dose administration
-AUC0-72-ss	Area under the plasma concentration-time curve over 72 h following 15-day steady state dosing (multiple dosing)
-AUC0-tau-ss	Area under the plasma concentration-time curve over 24 h following 15-day steady state dosing (multiple dosing)
-AUC0-Tlast	Area under the time-concentration curve from the time of dosing to the time of last observable concentration
-AUCinf	Area under the plasma concentration time curve from time zero to infinity
-BLQ	Below the Limit of Quantification
-BMI	Body Mass Index
-BP	Blood Pressure
-BUN	Blood Urea Nitrogen
-Cav-ss	Average Concentration During a Dosing Interval At Steady State
-CBC	Complete Blood Count
+AE	adverse event
+ALP	alkaline phosphatase
+ALT	alanine aminotransferase
+ANCOVA	analysis of covariance
+AST	aspartate aminotransferase
+AUC	area under the concentration-time curve
+AUC0-24	area under the plasma concentration-time curve over 24 h following single dose administration
+AUC0-72	area under the plasma concentration-time curve over 72 h following single dose administration
+AUC0-72-ss	area under the plasma concentration-time curve over 72 h following 15-day steady state dosing (multiple dosing)
+AUC0-tau-ss	area under the plasma concentration-time curve over 24 h following 15-day steady state dosing (multiple dosing)
+AUC0-Tlast	area under the time-concentration curve from the time of dosing to the time of last observable concentration
+AUCinf	area under the plasma concentration time curve from time zero to infinity
+BLQ	below the limit of quantification
+BMI	body mass index
+BP	blood pressure
+BUN	blood urea nitrogen
+Cav-ss	average concentration during a dosing interval at steady state
+CBC	complete blood count
 CDC	Centers for Disease Control and Prevention
-CFR	Code of Federal Regulation
 CFR	Code of Federal Regulations
-CI	Confidence Interval
+CI	confidence interval
 CIOMS	Council for International Organizations of Medical Sciences
-CIOMS	Council for International Organizations of Medical Sciences
-Cl	Clearance
-cm	Centimeter
-Cmax	Maximum plasma concentration
-Cmax-ss	Maximum plasma concentration in a dosing interval at Steady State
-Cmin-ss	Lowest Plasma Concentration in a dosing interval at Steady State
+Cl	clearance
+cm	centimeter
+Cmax	maximum plasma concentration
+Cmax-ss	maximum plasma concentration in a dosing interval at steady state
+Cmin-ss	lowest plasma concentration in a dosing interval at steady state
 CONSORT	Consolidated Standards of Reporting Trials
-COWS	Objective Opiate Withdrawal Scale
-CRA	Clinical Research Associate
-CRF	Case Report Form
-CRF	Case Report Form
-CRO	Contract Research Organization
-CRO	Contract Research Organization
-CSR	Clinical Study Report
-Ctrough	Concentration observed at the last planned timepoint prior to dosing
-CV	Coefficient of Variation
-DBP	Diastolic Blood Pressure
+COWS	Clinical Opiate Withdrawal Scale
+CRA	clinical research associate
+CRF	case report form
+CRO	contract research organization
+CSR	clinical study report
+Ctrough	concentration observed at the last planned timepoint prior to dosing
+CV	coefficient of variation
+DBP	diastolic blood pressure
 DEQ	Drug Effect Questionnaire
-DMC	Data Monitoring Committee
-ECG	Electrocardiogram
-eCRF	Electronic Case Report Form
-EDC	Electronic Data Capture
-eGFR	Estimated Glomerular Filtration Rate
-EOS	End of Study
-ET	Early Termination
-FAS	Full Analysis Set
-FAS	Full Analysis Set Population
+DMC	data monitoring committee
+ECG	electrocardiogram
+eCRF	electronic case report form
+EDC	electronic data capture
+eGFR	estimated glomerular filtration rate
+EOS	end of study
+ET	early termination
+FAS	full analysis set population
 FDA	Food and Drug Administration
-fl oz	Fluid ounce
-g	Grams
+fl oz	fluid ounce
+g	grams
 GCP	Good Clinical Practice
-GCP	Good Clinical Practice
-GI	Gastrointestinal
+GI	gastrointestinal
 GLP	Good Laboratory Practices
 GMP	Good Manufacturing Practices
-h	Hour
+h	hour
 HIPAA	Health Insurance Portability and Accountability Act
-HR	Heart rate
-IB	Investigator's Brochure
-ICF	Inform Consent Form
+HR	heart rate
+IB	investigator's brochure
+ICF	informed consent form
 ICH	International Conference on Harmonisation
-IP	Investigational Product
-IPMP	Investigational Product Management Plan
-IRB	Institutional Review Board
-ISF	Investigator Site File
-K	Potassium
-Kel	Elimination Rate Constant
-Kg	Kilogram
-LAR	Legally Authorized Representative
-lbs	Pounds
-LEC	Local Ethics Committee
-LS means	Least Squares Means
-MCH	Mean Corpuscular Hemoglobin
-MCHC	Mean Corpuscular Hemoglobin Concentration
-MCV	Mean Corpuscular Volume
+IP	investigational product
+IPMP	investigational product management plan
+IRB	institutional review board
+ISF	investigator site file
+K	potassium
+Kel	elimination rate constant
+Kg	kilogram
+LAR	legally authorized representative
+lbs	pounds
+LEC	local ethics committee
+LS means	least squares means
+MCH	mean corpuscular hemoglobin
+MCHC	mean corpuscular hemoglobin concentration
+MCV	mean corpuscular volume
 MedDRA	Medical Dictionary for Regulatory Activities
-MedDRA	Medical Dictionary for Regulatory Activities
-mg	Milligram
-mL	Milliliters
-MPV	Mean Platelet Volume
-N/A	Not Applicable
-Na	Sodium
-Ng	Nanogram(s)
+mg	milligram
+mL	milliliters
+MPV	mean platelet volume
+N/A	not applicable
+Na	sodium
+Ng	nanogram(s)
 NNHPD	Natural and Non-Prescription Products Directorate
-P1	Placebo #1
-P2	Placebo #2
-P3	Placebo #3
-PD	Protocol Deviation
-PI	Principal Investigator
-PK	Pharmacokinetic
-PKMD	Pharmacokinetic Multiple-Dose
-PKSD	Pharmacokinetic Single-Dose
-PP	Per Protocol Population
-PPS	Per Protocol Set
-PT	Preferred Term
-QA	Quality Assurance
-RBC	Red Blood Cell Count
-RDW	Red Cell Distribution Width
-REB	Research Ethics Board
-RR	Respiratory Rate
-SAE	Serious Adverse Event
-SAF	Safety Population
-SAP	Statistical Analysis Plan
-SBP	Systolic Blood Pressure
-SD	Standard Deviation
-SEM	Standard Error of the Mean
-SMO	Site Management Organization
-SoA	Schedule of Activities
-SOC	System Organ Class
-SOC	System Organ Class
+P1	placebo #1
+P2	placebo #2
+P3	placebo #3
+PD	protocol deviation
+PI	principal investigator
+PK	pharmacokinetic
+PKMD	pharmacokinetic multiple-dose
+PKSD	pharmacokinetic single-dose
+PP	per protocol population
+PPS	per protocol set
+PT	preferred term
+QA	quality assurance
+RBC	red blood cell count
+RDW	red cell distribution width
+REB	research ethics board
+RR	respiratory rate
+SAE	serious adverse event
+SAF	safety population
+SAP	statistical analysis plan
+SBP	systolic blood pressure
+SD	standard deviation
+SEM	standard error of the mean
+SMO	site management organization
+SoA	schedule of activities
+SOC	system organ class
 SOWS	Subjective Opiate Withdrawal Scale
-SpO2	Oxygen Saturation
-T1/2	Terminal Half-Life
-TEAE	Treatment Emergent Adverse Event
-Tlast	Time of last measurable (positive) observed concentration
-Tlast-ss	Time of last measurable (positive) observed concentration at steady state
-Tmax	Time to reach Cmax
-Tmax-ss	Time to reach maximum (peak) plasma concentration following study product administration at steady state
-TMF	Trial Master File
-TP	Test Product
-Tsp	Teaspoon
-V	Visit
-WBC	White Blood Cell Count
+SpO2	oxygen saturation
+T1/2	terminal half-life
+TEAE	treatment emergent adverse event
+Tlast	time of last measurable (positive) observed concentration
+Tlast-ss	time of last measurable (positive) observed concentration at steady state
+Tmax	time to reach Cmax
+Tmax-ss	time to reach maximum (peak) plasma concentration following study product administration at steady state
+TMF	trial master file
+TP	test product
+Tsp	teaspoon
+V	visit
+WBC	white blood cell count
 WHO	World Health Organization
-PM	Project Manager
-COVID-19	 Coronavirus Disease of 2019
-ITT	Intention-To-Treat
-RP	Reference Product
+PM	project manager
+COVID-19	coronavirus disease of 2019
+ITT	intention-to-treat
+RP	reference product
